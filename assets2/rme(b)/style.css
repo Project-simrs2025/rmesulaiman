@@ -1,0 +1,81 @@
+
+.kop {
+	border-bottom: 3px solid black;
+	padding-bottom: 15px;
+	margin-bottom: 20px;
+}
+
+.no-border {
+	border-top: none !important;
+	border-bottom: none !important;
+}
+
+.kop img {
+	max-width: 80px;
+}
+
+.kop-title {
+	font-size: 32px !important;
+	font-weight: bold;
+}
+
+.kop-subtitle {
+	font-size: 18px !important;
+}
+
+.table-container {
+	margin-top: 20px;
+}
+
+.form-group {
+	display: flex;
+	align-items: center;
+	margin-bottom: 15px;
+}
+
+.form-group label {
+	flex: 0 0 150px;
+	/* Lebar label */
+	margin-bottom: 0;
+}
+
+.form-group input {
+	flex: 1;
+}
+
+.td-narrow {
+	width: 100px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.vertical-text {
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+	text-align: center;
+	font-weight: bold;
+}
+
+
+/* Hilangkan spinner pada browser modern */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Hilangkan spinner pada Firefox */
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+input[type="date"] {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	border: 1px solid #000; /* Opsional */
+	padding: 5px;
+	font-size: 16px;
+}
+
+

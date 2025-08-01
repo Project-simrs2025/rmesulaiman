@@ -1,0 +1,2 @@
+https://wa.me/<?php echo $whatsapp; ?>
+?text=Isi Pesan

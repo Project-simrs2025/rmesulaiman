@@ -183,19 +183,19 @@
          <td>Diagnosa Medis</td>
              <td>
                 <div class="">
-                    <select style="width:250px;" name="diagnosa_pertama[]" id="diagnosa_pertama${rowCount}" class="form-select diagnosa_pertama"></select>
+                    <select style="width:200px;" name="diagnosa_pertama[]" id="diagnosa_pertama${rowCount}" class="form-select diagnosa_pertama"></select>
                     <input type="hidden" name="diagnosa_pertama_nama[]" class="diagnosa_pertama_nama">
                 </div>
             </td>
              <td>
                 <div class="">
-                    <select style="width:250px;" name="diagnosa_kedua[]" id="diagnosa_kedua${rowCount}" class="form-select diagnosa_kedua"></select>
+                    <select style="width:200px;" name="diagnosa_kedua[]" id="diagnosa_kedua${rowCount}" class="form-select diagnosa_kedua"></select>
                     <input type="hidden" name="diagnosa_kedua_nama[]" class="diagnosa_kedua_nama">
                 </div>
             </td>
             <td>
                 <div class="">
-                    <select style="width:250px;" name="diagnosa_ketiga[]" id="diagnosa_ketiga${rowCount}" class="form-select diagnosa_ketiga"></select>
+                    <select style="width:200px;" name="diagnosa_ketiga[]" id="diagnosa_ketiga${rowCount}" class="form-select diagnosa_ketiga"></select>
                     <input type="hidden" name="diagnosa_ketiga_nama[]" class="diagnosa_ketiga_nama">
                 </div>
             </td>
@@ -260,21 +260,21 @@
             <td>
             <div>Pj Shift Pagi</div>
                 <div class="">
-                    <select name="perawat_pengkaji_pertama[]" id="perawat_pengkaji_pertama${rowCount}" class="form-select perawat_pengkaji_pertama"></select>
+                    <select name="perawat_pengkaji_pertama[]" id="perawat_pengkaji_pertama${rowCount}" class="form-select perawat_pengkaji_pertama" style="width:200px"></select>
                     <input type="hidden" name="perawat_pengkaji_pertama_nama[]" class="perawat_pengkaji_pertama_nama">
                 </div>
             </td>
              <td>
                 <div class="">
                 <div>Pj Shift Sore</div>
-                    <select name="perawat_pengkaji_kedua[]" id="perawat_pengkaji_kedua${rowCount}" class="form-select perawat_pengkaji_kedua"></select>
+                    <select name="perawat_pengkaji_kedua[]" id="perawat_pengkaji_kedua${rowCount}" class="form-select perawat_pengkaji_kedua" style="width:200px"></select>
                     <input type="hidden" name="perawat_pengkaji_kedua_nama[]" class="perawat_pengkaji_kedua_nama">
                 </div>
             </td>
             <td>
                 <div class="">
                 <div>Pj Shift Malam</div>
-                    <select name="perawat_pengkaji_ketiga[]" id="perawat_pengkaji_ketiga${rowCount}" class="form-select perawat_pengkaji_ketiga"></select>
+                    <select name="perawat_pengkaji_ketiga[]" id="perawat_pengkaji_ketiga${rowCount}" class="form-select perawat_pengkaji_ketiga" style="width:200px"></select>
                     <input type="hidden" name="perawat_pengkaji_ketiga_nama[]" class="perawat_pengkaji_ketiga_nama">
                 </div>
             </td>
@@ -290,21 +290,21 @@
             <td>
                 <div class="">
                 <div>Pj Shift Sore</div>
-                    <select name="perawat_pengkaji2_pertama[]" id="perawat_pengkaji2_pertama${rowCount}" class="form-select perawat_pengkaji2_pertama"></select>
+                    <select name="perawat_pengkaji2_pertama[]" id="perawat_pengkaji2_pertama${rowCount}" class="form-select perawat_pengkaji2_pertama" style="width:200px"></select>
                     <input type="hidden" name="perawat_pengkaji2_pertama_nama[]" class="perawat_pengkaji2_pertama_nama">
                 </div>
             </td>
              <td>
                 <div class="">
                 <div>Pj Shift Malam</div>
-                    <select name="perawat_pengkaji2_kedua[]" id="perawat_pengkaji2_kedua${rowCount}" class="form-select perawat_pengkaji2_kedua"></select>
+                    <select name="perawat_pengkaji2_kedua[]" id="perawat_pengkaji2_kedua${rowCount}" class="form-select perawat_pengkaji2_kedua" style="width:200px"></select>
                     <input type="hidden" name="perawat_pengkaji2_kedua_nama[]" class="perawat_pengkaji2_kedua_nama">
                 </div>
             </td>
             <td>
                 <div class="">
                 <div>Pj Shift Pagi</div>
-                    <select name="perawat_pengkaji2_ketiga[]" id="perawat_pengkaji2_ketiga${rowCount}" class="form-select perawat_pengkaji2_ketiga"></select>
+                    <select name="perawat_pengkaji2_ketiga[]" id="perawat_pengkaji2_ketiga${rowCount}" class="form-select perawat_pengkaji2_ketiga" style="width:200px"></select>
                     <input type="hidden" name="perawat_pengkaji2_ketiga_nama[]" class="perawat_pengkaji2_ketiga_nama">
                 </div>
             </td> 
@@ -317,21 +317,21 @@
             <td>
                 <div class="">
                 <div>Karu</div>
-                    <select name="karu_pertama[]" id="karu_pertama${rowCount}" class="form-select karu_pertama"></select>
+                    <select name="karu_pertama[]" id="karu_pertama${rowCount}" class="form-select karu_pertama" style="width:200px"></select>
                     <input type="hidden" name="karu_pertama_nama[]" class="karu_pertama_nama">
                 </div>
             </td>
              <td>
                 <div class="">
                 <div>Karu</div>
-                    <select name="karu_kedua[]" id="karu_kedua${rowCount}" class="form-select karu_kedua"></select>
+                    <select name="karu_kedua[]" id="karu_kedua${rowCount}" class="form-select karu_kedua" style="width:200px"></select>
                     <input type="hidden" name="karu_kedua_nama[]" class="karu_kedua_nama">
                 </div>
             </td>
             <td>
                 <div class="">
                 <div>Karu</div>
-                    <select name="karu_ketiga[]" id="karu_ketiga${rowCount}" class="form-select karu_ketiga"></select>
+                    <select name="karu_ketiga[]" id="karu_ketiga${rowCount}" class="form-select karu_ketiga" style="width:200px"></select>
                     <input type="hidden" name="karu_ketiga_nama[]" class="karu_ketiga_nama">
                 </div>
             </td> 

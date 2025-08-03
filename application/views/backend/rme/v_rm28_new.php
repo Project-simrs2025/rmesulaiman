@@ -1,3 +1,23 @@
+<style>
+ /* Sticky hanya untuk isi (td) kolom ke-2: Tanggal */
+#VisiteProgramTable tbody td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 2;
+}
+
+/* Sticky hanya untuk isi (td) kolom ke-3: Nama Obat */
+#VisiteProgramTable tbody td:nth-child(3) {
+    position: sticky;
+    left: 260px; /* Sesuaikan dengan lebar kolom ke-2 */
+    background: white;
+    z-index: 2;
+}
+
+</style>
+
+
 <!-- Informasi Pasien -->
 <div class="row">
     <table class="table table-responsive border-dark">
@@ -59,7 +79,11 @@
             <thead class="table-bordered border-dark">
                 <tr>
                     <td colspan="2">Ruang Rawat Awal</td>
-                    <td colspan="13"><input type="text" name="ruang_rawat_awal" id="" class="form-control border-dark" style="width: 350px;"></td>
+                    <td colspan="13">
+                        <div>
+                            <input type="text" name="ruang_rawat_awal" id="" class="form-control border-dark w-25">
+                        </div>
+                    </td>
                     <td colspan="2">
                         <div>Riwayat Alergi Obat :</div>
                         <div class="d-flex align-items-center gap-2">

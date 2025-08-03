@@ -1,6 +1,6 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
-const BASE_STORAGE = "https://ssulaiman.medikasolusidigital.com:1380";
+const BASE_STORAGE = "http://localhost";
 
 /*
 |--------------------------------------------------------------------------

@@ -130,13 +130,16 @@ class Data_klaim extends CI_Controller
 		    $this->_render_pdfrm2b($id_kunjungan, $pdf);
 		    $this->_render_pdfrm3($id_kunjungan, $pdf);
 		    $this->_render_pdfrm7($id_kunjungan, $pdf);
-		    // $this->_render_pdfrm10($id_kunjungan, $pdf);
+		    
 		    $this->_render_pdfrmcppt($id_kunjungan, $pdf);
-		    $this->_render_pdfrm12b($id_kunjungan, $pdf);
-		    $this->_render_pdfrm12c($id_kunjungan, $pdf);
+		    $this->_render_pdfrm15e($id_kunjungan, $pdf);
+		    $this->_render_pdfrm17d1($id_kunjungan, $pdf);
 		    $this->_render_pdfrm18e($id_kunjungan, $pdf);
-		    $this->_render_pdfrm28($id_kunjungan, $pdf);
-			// $this->_render_pdfrm2($id_kunjungan, $pdf);
+			$this->_render_pdfrm12c($id_kunjungan, $pdf);
+			
+
+
+		    // $this->_render_pdfrm2($id_kunjungan, $pdf);
 
 		    
 
@@ -149,8 +152,8 @@ class Data_klaim extends CI_Controller
 
 	        // Simpan ke file di folder temp_pdf
 	        $pdf->Output($fullpath, 'F');
-	        // ob_end_clean();
-	        // $pdf->Output($no_sep.'.pdf', 'I');
+	        //ob_end_clean();
+	        //$pdf->Output($no_sep.'.pdf', 'I');
 
 	        // Jika kamu mau, bisa return atau redirect ke file ini, misal:
 	        // redirect(base_url('temp_pdf/' . $filename));
@@ -517,6 +520,3168 @@ class Data_klaim extends CI_Controller
 	// RM 9 URUTAN 1
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+
+	
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RM 2A URUTAN 2
+	public function _render_pdfrm2a($id_kunjungan, $pdf)
+	{
+		// Ambil data unit
+		$unit = $this->site_model->get_unit_data();
+		$nama_prov = $unit['nama_prov'];
+		$nama_kab = $unit['nama_kab'];
+		$nama_kec = $unit['nama_kec'];
+		$nama_kel = $unit['nama_kel'];
+		$alamat = $unit['alamat'];
+		$city_sign = $unit['nama_kab'];
+		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+
+		// Ambil data settings
+		$getsettings = $this->site_model->get_settings_data();
+		$site_title = $getsettings['nama'];
+		$telepon = $getsettings['telepon'];
+		$email = $getsettings['email'];
+		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+		// Ambil data FORM RME berdasarkan ID
+		$berkas_klaim = 'rm2a';
+		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
+		if (!$formData) {
+			return;
+		}
+		$link = $formData->nama_berkas;
+		
+		$id_kunjungan = $formData->id_kunjungan;
+		$id_pasien_rme = $formData->id_pasien_rme;
+		$jsonRaw = $formData->data_json;
+		$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+		$idBerkas = $decodedData['id'] ?? null;
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// BATAS AMBIL DATA
+		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+		if ($get_id_konten->num_rows() > 0) {
+			$id_poli = $get_id_konten->row()->id_poly;
+			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
+
+			if ($admission_id_kunjungan == NULL) {
+				// DATA DARI ANTRIAN
+				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+				$tgl_admit2 = date($post->waktu_masuk);
+				$tgl_admit = format_indo(date($post->waktu_masuk));
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$nama_poli = $post->nama_poli;
+				$nama_dokter = $post->nama_dokter;
+				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+				// DATA DARI ANTRIAN
+			} else {
+				// DATA DARI ADMISSION
+				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$tgl_admit2 = $post->tgl_admit;
+				$post->umur = countumur($post->tanggal_lahir);
+				$tgl_admit = format_indo(date($post->tgl_admit));
+				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+				$nama_lantai = $post->nama_lantai;
+				$nama_dokter = $post->nama_dokter;
+				$nama_poli = $post->nama_poli;
+				$nama_ruangan = $post->nama_ruangan;
+				$no_bad = $post->no_bad;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$kelas = $post->kelas;
+				$lama = countme($post->tgl_admit);
+				// DATA DARI ADMISSION
+			}
+		} else {
+			redirect('backend/data_klaim');
+		}
+		// BATAS AMBIL DATA
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		// Simpan data perawat jika user level 13
+		$levelUser = $this->session->all_userdata()['level'];
+		if ($levelUser == 13) {
+			$post->id_perawat = $this->session->all_userdata()['id'];
+			$post->nama_perawat = $this->session->all_userdata()['name'];
+		}
+
+		$postmenu = $this->admission_model->get_menu($link);
+		$judulRM = $postmenu->isi;
+		$namaRM = $postmenu->rm;
+		$linkRM = $postmenu->link;
+		$dokters = $decodedData['dokter_umum'];
+		// $result_dokter = $this->data_klaim_model->get_karyawan_by_nama($dokters);
+
+		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
+		// $imagesttd = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
+		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+		// ... Inisialisasi PDF seperti sebelumnya
+
+		$pdf->AddPage();
+		$pdf->SetFont('times', '', 11);
+
+		// HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($images, 10, 10, 20, 20, '', '', 1, 0);
+		$pdf->SetFont('times', 'B', 16);
+		$pdf->Cell(190, 4, $site_title, 0, 1, 'C');
+		$pdf->SetFont('times', 'B', 10);
+		$pdf->MultiCell(45, 1, '', 0, 'C', 0, 0, '', '', true);
+		$pdf->MultiCell(100, 1, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
+		$pdf->Cell(10, 2, '', 0, 1);
+		$pdf->writeHTML("<hr>", true, false, false, false, '');
+
+
+		// FONT UTAMA
+		$pdf->SetFont('times', '', 10);
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+		$html2 = '
+	    <h3 align="right">' . $namaRM . '</h3>
+
+		 <table cellpadding="5" cellspacing="0" border="1">
+			    <tr>
+			        <td width="12%" style="border:1px solid black; text-align:center;" ><img src="' . $images . '" width="50" height="50" /></td>
+					<td width="48%" style="text-align:center;" colspan="3"><div>Formulir Triage Anak</div><div>' . $site_title . '</div></td>
+					<td width="40%" colspan="3" cellpadding="1">
+						<b><label>Nama Pasien</label> : </b>' . $nama_pasien . '<br>
+						<b><label>Jenis Kelamin</label> :  </b>' . $jenkel . '<br>
+						<b><label>Tanggal Lahir</label> : </b>' . $tgl_lahir . '<br>
+						<b><label>No. RM </label>: </b>' . $no_rm . '<br>
+						<b><label>NIK</label> : </b>' . $nik . '
+					</td>
+				</tr>
+				<tr>
+					<td>Cara Datang</td>
+			';
+
+		$metodePenanganan = $decodedData; // Asumsi data yang dikirim sudah dalam bentuk array (bukan string)
+		$opsiPenangan = [
+			'sendiri',
+			'ambulans',
+			'diantar_polisi',
+		];
+
+		// Membuat array kosong untuk menampung metode penanganan yang terpilih
+		$selectedItems = [];
+
+		foreach ($opsiPenangan as $opsi) {
+			// Periksa apakah metode penanganan ada dalam decoded data dan terpilih (misalnya, "on")
+			if (isset($metodePenanganan[$opsi]) && $metodePenanganan[$opsi] === 'on') {
+				$selectedItems[] = strtolower($opsi); // Menambahkan opsi yang dipilih ke array selectedItems
+			}
+		}
+
+
+		foreach ($opsiPenangan as $opsi) {
+			$checked = in_array(strtolower($opsi), $selectedItems) ? '[v]' : '[ ]';
+			$label = ucwords(str_replace('_', ' ', $opsi));
+			$html2 .= '<td>' . $checked . ' ' . $label . '</td>';
+			// Mencetak opsi dengan tanda centang
+		}
+
+
+		//////////////////////// cols 2 jenis kasus ////////////////// 
+		/////////////////////////////////////////////////////////////
+		function checkbox($value, $label = '')
+		{
+			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+
+		function valueOrDash($field)
+		{
+			return isset($field) ? $field : '-';
+		}
+
+		$jamDatang = valueOrDash($decodedData['jam_penanganan_dewasa_1'] ?? '');
+		$jamDoa = valueOrDash($decodedData['jam_doa_dewasa_1'] ?? '');
+		$triageSekunder = valueOrDash($decodedData['trage_sekunder_dewasa_1'] ?? '');
+
+		$nonTrauma = valueOrDash($decodedData['jenis_kasus_dewasa_non_trauma_1'] ?? '');
+		$trauma = valueOrDash($decodedData['jenis_kasus_dewasa_trauma_1'] ?? '');
+		$kll = valueOrDash($decodedData['jenis_kasus_dewasa_kll_1'] ?? '');
+		$kasusLain = valueOrDash($decodedData['jenis_kasus_dewasa_lain_lain_1'] ?? '');
+
+
+		$html2 .= '
+				<td rowspan="2" colspan="2"><b>Jam Datang</b> ' . $jamDatang . '</td>
+				<td>
+					<div>' . checkbox($decodedData['metode_penanganan_doa_1'] ?? null, 'Doa') . '<br>
+					' . $jamDoa . '</div>
+				</td>
+			</tr>
+			<tr>
+				<td>Jenis Kasus</td>
+				<td>
+					<span>' . checkbox($decodedData['jenis_kasus_dewasa_1'] ?? null) . $nonTrauma . ' Non Trauma</span><br>
+					<span>' . checkbox($decodedData['jenis_kasus_dewasa_2'] ?? null) . $trauma . ' Trauma</span>
+				</td>
+				<td><div>' . checkbox($decodedData['jenis_kasus_dewasa_3'] ?? null) . $kll . ' KLL</div></td>
+				<td><div>' . checkbox($decodedData['jenis_kasus_dewasa_4'] ?? null) . $kasusLain . ' Lain-lain</div></td>
+				<td>Triage Sekunder ' . $triageSekunder . '</td>
+			</tr>
+			<tr>
+				<td>Pemeriksaan</td>
+				<td>Kategori I</td>
+				<td>Kategori II</td>
+				<td>Kategori III</td>
+				<td>Kategori IV</td>
+				<td>Kategori V</td>
+				<td>Tanda Vital</td>
+			</tr>
+			';
+		// divider ///////////////////////////////
+
+
+		//////////////// cols 3 jalan nafas ////////////////
+		///////////////////////////////////////////////////
+		$keadaanUmum = valueOrDash($decodedData['keadaan_umum'] ?? '');
+
+
+		$html2 .= '<tr>
+				<td>Jalan Nafas</td>
+				<td>
+					<div>' . checkbox($decodedData['sumbatan_total'] ?? null)  . ' Sumbatan Total <br>
+					' . checkbox($decodedData['sumbatan_sebagian_distress_berat'] ?? null)  . ' Sumbatan sebagian disertai distress pernafasan berat</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['bebas'] ?? null) . ' Bebas <br>
+					' . checkbox($decodedData['sumbatan_sebagian_distress_sedang'] ?? null) . 'Sumbatan sebagian disertai distress pernafasan sedang</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['bebas_3'] ?? null) . ' Bebas <br>
+					' . checkbox($decodedData['sumbatan_sebagian_distress_ringan'] ?? null) .  'Sumbatan sebagian disertai distress pernafasan Ringan</div>
+				</td>
+				<td>' . checkbox($decodedData['bebas4'] ?? null) . ' Bebas </td>
+				<td>' . checkbox($decodedData['bebas_5'] ?? null) .  ' Bebas </td>
+				<td><span style="text-align:center;">Keadaan Umum</span> <br> ' . $keadaanUmum . '</td>
+		</tr>
+		
+		
+		';
+		// divider ////////////////////////////
+
+
+		//////////////////// cols 4 pernapasan ///////////////////////
+		//////////////////////////////////////////////////////////////
+		$SuhuJalanNafas = valueOrDash($decodedData['suhu'] ?? '');
+		$SaO2JalanNafas = valueOrDash($decodedData['sa02'] ?? '');
+		$FrekuensiJalanNafas = valueOrDash($decodedData['frekuensi'] ?? '');
+		$NadiJalanNafas = valueOrDash($decodedData['nadi'] ?? '');
+
+
+		$html2 .= '
+			<tr>
+				<td>Pernapasan</td>
+				<td>
+					<div>' . checkbox($decodedData['nafas_spontan_minus'] ?? null) . ' Nafas spontan (-) <br>
+					' . checkbox($decodedData['hipoventilasi'] ?? null) .  'hipoventilasi<br>
+					' . checkbox($decodedData['distress_pernafasan_berat'] ?? null) .  'Distress pernafasan berat (otot diafragma berat, retraksi berat, sianosis akut)</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['nafas_spontan_plus_1'] ?? null) . 'Nafas spontan (+) <br>
+					' . checkbox($decodedData['distress_pernafasan_sedang_1'] ?? null) . 'Distress pernafasan sedang (otot diafragma sedang, retraksi sedang, kulit pucat)</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['nafas_spontan_plus_2'] ?? null) . 'Nafas spontan (+) <br>
+					' . checkbox($decodedData['distress_pernafasan_ringan_2'] ?? null) . 'Distress pernafasan ringan (otot diafragma ringan, retraksi ringan, kulit kemerahan)</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['nafas_spontan_plus_3'] ?? null) . 'Nafas spontan (+) <br>
+					' . checkbox($decodedData['tidak_ada_distress_pernafasan_3'] ?? null) . 'Tidak ada distress pernafasan (otot diafragma normal, retraksi tidak ada)</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['nafas_spontan_plus_4'] ?? null) . 'Nafas spontan (+) <br>
+					' . checkbox($decodedData['tidak_ada_distress_pernafasan_4'] ?? null) . 'Tidak ada distress pernafasan (retraksi tidak ada, otot diafragma normal)</div>
+				</td>
+				<td>
+					<div>
+						<span style="text-align:center;">Suhu  ' . $SuhuJalanNafas . '<sup>o</sup>C </span><br> 
+						<span style="text-align:center;">SaO2  ' . $SaO2JalanNafas . ' %</span><br> 
+						<span style="text-align:center;">Frekuensi  ' . $FrekuensiJalanNafas . '</span> <br> 
+						<span style="text-align:center;">Nadi ' . $NadiJalanNafas . 'x/mnt</span>  <br> 
+					</div>
+				</td>
+		</tr>
+		';
+		//////////////////////// divider /////////////////////////////
+		/////////////////////////////////////////////////////////////
+
+
+		/////////////////////// cols 5 sirkulasi ////////////////////
+		/////////////////////////////////////////////////////////////
+		$SirkulasiNafas = valueOrDash($decodedData['nafas_k'] ?? '');
+		$SirkulasiTD = valueOrDash($decodedData['td_k'] ?? '');
+		$SirkulasiRiwayat = valueOrDash($decodedData['riwayat_'] ?? '');
+
+		$html2 .= '
+			<tr>
+			<td>Sirkulasi</td>
+			<td>
+				<div>' . checkbox($decodedData['absen_sirkulasi_1'] ?? null) . 'Absen sirkulasi<br>
+				' . checkbox($decodedData['signifikan_bradikardia_1'] ?? null) . 'Signifikan bradikardia Ch. 60 pada bayi<br>
+				' . checkbox($decodedData['gangguan_hemodinamik_berat_1'] ?? null) . 'Gangguan hemodinamik berat<br>
+				' . checkbox($decodedData['nadi_perifer_minus_1'] ?? null) . 'Nadi perifer (-)<br>
+				' . checkbox($decodedData['kulit_pucat_akral_dingin_1'] ?? null) . 'Kulit pucat, akral dingin, bintik-bintik merah pada ekstremitas<br>
+				' . checkbox($decodedData['takikardia_berat_1'] ?? null) . 'Takikardia berat<br>
+				' . checkbox($decodedData['pengisian_kapiler_1'] ?? null) . 'Pengisian kapiler>4 detik perdarahan tidak terkontrol<br>
+				</div>
+			</td>
+			<td>
+				<div>' . checkbox($decodedData['sirkulasi_sirkulasi_2'] ?? null) . 'Sirkulasi (+)<br>
+				' . checkbox($decodedData['gangguan_hemodinamik_sedang_2'] ?? null) . 'Gangguan hemodinamik sedang<br>
+				' . checkbox($decodedData['nadi_sirkulasi_lemah_2'] ?? null) . 'Nadi brachii lemah<br>
+				' . checkbox($decodedData['kulit_pucat_sirkulasi_dingin_2'] ?? null) . 'Kulit pucat, akral dingin<br>
+				' . checkbox($decodedData['takikardia_sedang_2'] ?? null) . 'Takikardia sedang<br>
+				' . checkbox($decodedData['pengisian_kapiler_sedang_2'] ?? null) . 'Pengisian kapiler 2-4 detik<br>
+				' . checkbox($decodedData['tanda_dehidrasi_6_2'] ?? null) . '>6 tanda dehidrasi<br>
+				</div>
+			</td>
+			<td>
+				<div>' . checkbox($decodedData['sirkulasi_plus_3'] ?? null) . 'Sirkulasi (+)<br>
+				' . checkbox($decodedData['gangguan_ringan_3'] ?? null) . 'Gangguan hemodinamik ringan<br>
+				' . checkbox($decodedData['nadi_teraba_3'] ?? null) . 'Nadi perifer teraba<br>
+				' . checkbox($decodedData['kulit_pucat_hangat_3'] ?? null) . 'Kulit pucat, akral hangat<br>
+				' . checkbox($decodedData['takikardia_ringan_3'] ?? null) . 'Takikardia ringan<br>
+				' . checkbox($decodedData['tanda_dehidrasi_3_6'] ?? null) . '3-6 tanda dehidras<br>
+				</div>
+			</td>
+			<td>
+				<div>' . checkbox($decodedData['sirkulasi_plus_4_1'] ?? null) . 'Sirkulasi (+)<br>
+				' . checkbox($decodedData['gangguan_hemodinamik_4_1'] ?? null) . 'Gangguan hemodinamik (-)<br>
+				' . checkbox($decodedData['nadi_perifer_4_1'] ?? null) . 'Nadi perifer teraba<br>
+				' . checkbox($decodedData['kulit_kemerahan_akral_4_1'] ?? null) . 'Kulit pucat, akral hangat<br>
+				' . checkbox($decodedData['tanda_dehidrasi_4_1'] ?? null) . 'Takikardia ringan<br>
+				</div>
+			</td>
+			<td>
+				<div>' . checkbox($decodedData['sirkulasi_sirkulasi_10_1'] ?? null) . 'Sirkulasi (+)<br>
+				' . checkbox($decodedData['gangguan_hemodinamik_10_1'] ?? null) . 'Gangguan hemodinamik (-)<br>
+				' . checkbox($decodedData['nadi_perifer_teraba_10_1'] ?? null) . 'Nadi perifer teraba<br>
+				' . checkbox($decodedData['kulit_sirkulasi_10_1'] ?? null) . 'Kulit kemerahan, akral hangat<br>
+				' . checkbox($decodedData['tanda_dehidrasi_10_1'] ?? null) . 'Tanda dehidrasi (-)<br>
+				</div>
+			</td>
+
+			<td>
+				<div>
+					<span>Suhu  ' . $SirkulasiNafas . '<sup>o</sup>C </span><br> 
+					<span>SaO2  ' . $SirkulasiTD . ' %</span><br> 
+					<span>Nadi ' . $SirkulasiRiwayat . 'x/mnt</span>  <br> 
+				</div>
+			</td>
+		</tr>
+		';
+		//////////////////////// divider /////////////////////////////
+		/////////////////////////////////////////////////////////////
+
+
+		///////// divider final ///////////
+		$html2 .= '</table>';
+		///////// divider final ///////////
+		$pdf->writeHTML($html2, true, false, true, false, '');
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+
+
+
+
+		// ===================== HALAMAN DUA ======================== //
+		$pdf->AddPage();
+
+		// $pdf->SetFont('times', 'B', 16);
+		// $pdf->Cell(190, 4, $site_title, 0, 1, 'C');
+		// $pdf->SetFont('times', 'B', 10);
+		// $pdf->MultiCell(45, 1, '', 0, 'C', 0, 0, '', '', true);
+		// $pdf->MultiCell(100, 1, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
+		// $pdf->Cell(10, 2, '', 0, 1);
+		// $pdf->writeHTML("<hr>", true, false, false, false, '');
+
+		// FONT UTAMA
+		$pdf->SetFont('times', '', 10);
+		// ========================================================= //
+
+		// ==================== DESAIN ============================== //
+		// ========================================================== //
+
+		/////////////////////// cols 6 Tanda Lain ////////////////////
+		/////////////////////////////////////////////////////////////
+
+		$html3 .= '
+		<table cellpadding="5" cellspacing="0" border="1">
+			<tr>
+				<td>Kesadaran</td>
+				<td><div>' . checkbox($decodedData['gcs'] ?? null) . 'GCS 9</div></td>
+				<td><div>' . checkbox($decodedData['gcs12'] ?? null) . 'GCS 9-12</div></td>
+				<td><div>' . checkbox($decodedData['gcs13'] ?? null) . 'GCS >13</div></td>
+				<td><div>' . checkbox($decodedData['gcs14'] ?? null) . 'GCS 15</div></td>
+				<td><div>' . checkbox($decodedData['gcs15'] ?? null) . 'GCS 15</div></td>
+				<td><div>' . checkbox($decodedData['gcmakan'] ?? null) . 'Makanan</div></td>
+			</tr>
+			<tr>
+				<td>Tanda Lain</td>
+				<td><div>' . checkbox($decodedData['kejang_sedang'] ?? null) . 'Kejang sedang berlangsung respon nyeri (+) Trauma kepala berat</div></td>
+				<td><div>' . checkbox($decodedData['kondisi2'] ?? null) . 'Gelisah Irritable Demam dengan tanda-tanda kejang sakit kepala kaku leher Bayi usia lebih kecil dari 28 hari</div></td>
+				<td>
+					<div>' . checkbox($decodedData['kondisi3'] ?? null) . 'Apatis<br>
+					' . checkbox($decodedData['somnolen'] ?? null) . 'Somnolen Nyeri perut hebat Fraktur ekstremitas Laserasi kulit Luka kotor<br>
+					</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['kondisi4'] ?? null) . 'Cedera tanpa penurunan kesadaran Nyeri abdomen tidak hebat Nyeri sedang Dislokasi sendi Inflamasi / benda asing pada mata Infeksi paru demam subfebris<br>
+					</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['kondisi5'] ?? null) . 'Gejala klinis (-) Rencana imunisasi Nyeri telinga tidak demam Sakit dengan gejala ringan Lebam post trauma ringan<br>
+					</div>
+				</td>
+				<td>
+					<div>' . checkbox($decodedData['obat_lainnya'] ?? null) . 'Obat<br>
+					' . checkbox($decodedData['obat_lain_lain'] ?? null) . 'Lain-lain<br>
+					' . checkbox($decodedData['obat_gcs_lainnya'] ?? null) . 'Gcs<br>
+					</div>
+				</td>
+			</tr>
+		';
+
+		/////////////////////// cols 7 Respon Time ////////////////////
+		/// ///////////////////////////////////////////////////////////
+		$TanggalCity = valueOrDash($decodedData['tanggal_2'] ?? '');
+
+		$html3 .= '
+    <tr>
+        <td>Respon Time</td>
+        <td>' . checkbox($decodedData['immediate'] ?? null) . 'Immediate</td>
+        <td>' . checkbox($decodedData['10menit_under'] ?? null) . '10 menit</td>
+        <td>' . checkbox($decodedData['30menit_under'] ?? null) . '30 menit</td>
+        <td>' . checkbox($decodedData['60menit_under'] ?? null) . '60 menit</td>
+        <td>' . checkbox($decodedData['120menit_under'] ?? null) . '120 menit</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Obserbasi</td>
+        <td>R.Resusitasi</td>
+        <td>R.Resusitasi/R.Obserbasi</td>
+        <td>R.Obserbasi</td>
+        <td>R.Obserbasi</td>
+        <td>R.Obserbasi</td>
+        <td>Tanggal ' . date('d / m / Y', strtotime($TanggalCity)) . '</td>
+    </tr>
+    <tr>
+        <td colspan="6" style="height: 50px;">' . checkbox($decodedData['emergency3'] ?? null) . 'Emergency</td>
+        <td rowspan="2">';
+
+		// =================== TTD MASUKKAN KE DALAM  ===================
+		// =================== TTD MASUKKAN KE DALAM =================== //
+			$perawat_pengkaji = $decodedData['perawat_pengkaji'];
+	        $safe_filename_triage = $this->to_safe_filename($perawat_pengkaji) . '.jpg';
+			$path_ttd_server_triage = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_triage;
+			$path_ttd_url_triage = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_triage;
+
+			$html3 .= '<span align="center">Petugas Triage, </span><br/>';
+			if (file_exists($path_ttd_server_triage)) {
+			    $html3 .= '<div align="center">
+			                   <img src="' . $path_ttd_url_triage . '" width="60" height="60" />
+			               </div>';
+			}
+			// Nama dokter tetap ditampilkan
+			$html3 .= '<br/>' . $decodedData['perawat_pengkaji'] . '<br/>';
+		// =================== TTD MASUKKAN KE DALAM =================== //
+
+		// if (!empty($decodedData['image_drawer']['state_image_1'])) {
+		// 	$imgJson = $decodedData['image_drawer']['state_image_1'];
+		// 	$imgData = json_decode($imgJson, true);
+
+		// 	if (!empty($imgData['markers'][0]['drawingImgUrl'])) {
+		// 		$src = $imgData['markers'][0]['drawingImgUrl'];
+
+		// 		if (strpos($src, 'data:image') === 0) {
+		// 			// Tambahkan gambar ke dalam <td>
+		// 			$html3 .= '<br><img src="' . $src . '" style="width:60px; height:auto;">';
+		// 		}
+		// 	}
+		// }
+
+
+		$html3 .= '
+			</td>
+		</tr>
+			<tr>
+				<td colspan="6" style="height: 50px;">' . checkbox($decodedData['false_emergency3'] ?? null) . 'False Emergency</td>
+			</tr>
+		';
+
+
+		////////////////// final divider ///////////////////
+		$html3 .= '
+			</table>
+		';
+		////////////////// final divider ///////////////////
+
+
+		$pdf->writeHTML($html3, true, false, true, false, '');
+	}
+	// RM 2A URUTAN 2
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		// ============== rm2b triase ========================= //
+	// ============================================================== //
+
+	public function _render_pdfrm2b($id_kunjungan, $pdf)
+	{
+		// Ambil data unit
+		$unit = $this->site_model->get_unit_data();
+		$nama_prov = $unit['nama_prov'];
+		$nama_kab = $unit['nama_kab'];
+		$nama_kec = $unit['nama_kec'];
+		$nama_kel = $unit['nama_kel'];
+		$alamat = $unit['alamat'];
+		$city_sign = $unit['nama_kab'];
+		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+		// Ambil data settings
+		$getsettings = $this->site_model->get_settings_data();
+		$site_title = $getsettings['nama'];
+		$telepon = $getsettings['telepon'];
+		$email = $getsettings['email'];
+		$imagesrm2b = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+		// Ambil data FORM RME berdasarkan ID
+		$berkas_klaim = 'rm2b';
+		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
+		if (!$formData) {
+			return;
+		}
+		$link = $formData->nama_berkas;
+		$jsonRaw = $formData->data_json;
+		$id_kunjungan = $formData->id_kunjungan;
+		$id_pasien_rme = $formData->id_pasien_rme;
+		$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+		$idBerkas = $decodedData['id'] ?? null;
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// BATAS AMBIL DATA
+		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+		if ($get_id_konten->num_rows() > 0) {
+			$id_poli = $get_id_konten->row()->id_poly;
+			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
+
+			if ($admission_id_kunjungan == NULL) {
+				// DATA DARI ANTRIAN
+				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+				$tgl_admit2 = date($post->waktu_masuk);
+				$tgl_admit = format_indo(date($post->waktu_masuk));
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$nama_poli = $post->nama_poli;
+				$nama_dokter = $post->nama_dokter;
+				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+				// DATA DARI ANTRIAN
+			} else {
+				// DATA DARI ADMISSION
+				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+				// $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+				$nama_pasien = $post->nama_pasien;
+				$no_bpjs = $post->no_bpjs;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$tgl_admit2 = $post->tgl_admit;
+				$post->umur = countumur($post->tanggal_lahir);
+				$tgl_admit = format_indo(date($post->tgl_admit));
+				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+				$nama_lantai = $post->nama_lantai;
+				$nama_dokter = $post->nama_dokter;
+				$nama_poli = $post->nama_poli;
+				$nama_ruangan = $post->nama_ruangan;
+				$no_bad = $post->no_bad;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$kelas = $post->kelas;
+				$nama_hub_pasien = $post->nama_hub_pasien;
+				$alamat_hub_pasien = $post->alamat_hub_pasien;
+				$noHp_hub_pasien = $post->noHp_hub_pasien;
+				$nama_bangsa = $post->nama_bangsa;
+				$hubungan_keluarga_pasien = $post->hubungan_keluarga_pasien;
+				$status_nikah = $post->status_nikah;
+				$nama_suku = $post->nama_suku;
+				$lama = countme($post->tgl_admit);
+				// DATA DARI ADMISSION
+			}
+		} else {
+			redirect('backend/data_klaim');
+		}
+		// BATAS AMBIL DATA
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+		// Simpan data perawat jika user level 13
+		$levelUser = $this->session->all_userdata()['level'];
+		if ($levelUser == 13) {
+			$post->id_perawat = $this->session->all_userdata()['id'];
+			$post->nama_perawat = $this->session->all_userdata()['name'];
+		}
+
+		$postmenu = $this->admission_model->get_menu($link);
+		$judulRM = $postmenu->isi;
+		$namaRM = $postmenu->rm;
+		$linkRM = $postmenu->link;
+
+
+		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
+		// $imagesttdrm025 = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
+
+		// ... Inisialisasi PDF seperti sebelumnya
+
+		$pdf->AddPage();
+		$pdf->SetFont('times', '', 11);
+
+		// HEADER PDF
+		// Matikan GAMBAR HEADER
+		// $pdf->Image($imagesrm2b, 10, 10, 20, 20, '', '', 1, 0);
+		// $pdf->SetFont('times', 'B', 16);
+		// $pdf->Cell(190, 4, $site_title, 0, 1, 'C');
+		// $pdf->SetFont('times', 'B', 10);
+		// $pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+		// $pdf->MultiCell(100, 5, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
+		// $pdf->Cell(10, 4, '', 0, 1);
+		// $pdf->writeHTML("<hr>", true, false, false, false, '');
+
+		// FONT UTAMA
+		$pdf->SetFont('times', '', 11);
+
+
+
+		// =================== HALAMAN PERTAMA ====================
+		function checkboxrm2b($value, $label = '')
+		{
+			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+		function radiomarkrm2b($value, $expectedValue, $label)
+		{
+			return ($value === $expectedValue) ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+		function valueOrDashrm2b($field)
+		{
+			return isset($field) ? htmlspecialchars($field) : '-';
+		}
+
+		$html1 = '
+		<h3 align="right">' . htmlspecialchars($namaRM) . '</h3>
+		
+		<table border="1" style="border-collapse:collapse;">
+			<tr>
+				<td width="50%">
+					<table style="border-collapse:collapse;">
+						<tr>
+							<td width="30%">
+							<br>
+								<div><img src="' . $imagesrm2b . '" width="180" height="180"/></div>
+							</td>
+							<td width="70%">
+								' . $site_title  . '<br>
+								' . $lokasi . ' <br>
+								' . $telepon . ' <br>
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td width="15%" align="center">
+					<br><br><br><br>FORMULIR TRIAGE
+				</td>
+				<td width="35%">
+				<br><br><br>
+					<table style="border-collapse:collapse;" >
+						<tr>
+							<td width="40%">Nama</td>
+							<td width="70%">
+								' . $nama_pasien . '
+							</td>
+						</tr>
+						<tr>
+							<td width="40%">Tanggal lahir</td>
+							<td width="70%">
+								' . $tgl_lahir . '
+							</td>
+						</tr>
+						<tr>
+							<td width="40%">Jenis Kelamin</td>
+							<td width="70%">
+								' . $jenkel . '
+							</td>
+						</tr>
+						<tr>
+							<td width="40%">No Rm</td>
+							<td width="70%">
+								' . $no_rm . '
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+
+		<table style="border-collapse:collapse" border="1">
+			<tr>
+				<td width="10%">Cara Datang</td>
+				<td width="15%">' . checkboxrm2b($decodedData['sendiri']) . ' Sendiri</td>
+				<td width="15%">' . checkboxrm2b($decodedData['ambulans']) . ' Ambulans</td>
+				<td width="15%">' . checkboxrm2b($decodedData['diantar_polisi']) . ' Diantar Polisi</td>
+				<td  width="30%" colspan="2" rowspan="2">
+					Jam Penanganan 
+					' . $decodedData['jam_penanganan_dewasa_1'] . '
+				</td>
+				<td width="15%" >
+					' . checkboxrm2b($decodedData['metode_penanganan_doa_1']) . ' Doa <br>
+					' . $decodedData['jam_doa_dewasa_1'] . '
+				</td>
+			</tr>
+
+			<tr>
+				<td>Jenis Kasus</td>
+				<td>' . checkboxrm2b($decodedData['jenis_kasus_dewasa_1']) . ' Non Trauma <br>
+				' . checkboxrm2b($decodedData['jenis_kasus_dewasa_2']) . 'Trauma 
+				</td>
+				<td>' . checkboxrm2b($decodedData['jenis_kasus_dewasa_3']) . 'KLL </td>
+				<td>' . checkboxrm2b($decodedData['jenis_kasus_dewasa_4']) . 'lain-lain </td>
+				<td>Triage Sekunder <br> ' . checkboxrm2b($decodedData['trage_sekunder_dewasa_1']) . '</td>
+			</tr>
+		
+			<tr>
+				<td>Pemeriksaan</td>
+				<td>Kategori I</td>
+				<td>Kategori II</td>
+				<td>Kategori III</td>
+				<td>Kategori IV</td>
+				<td>Kategori V</td>
+				<td colspan="2">Tanda Vital</td>
+			</tr>
+
+			<tr>
+				<td>Jalan Nafas</td>
+				<td>
+					' . checkboxrm2b($decodedData['sumbatan_total']) . 'Sumbatan total <br>
+				
+					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_berat']) . 'Sumbatan sebagian dengan distress berat 
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['bebas']) . ' Bebas<br>
+				
+					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_sedang']) . 'Sumbatan sebagian dengan distress sedang 
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['bebas_3']) . ' Bebas<br>
+				
+					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_ringan']) . ' Sumbatan sebagian dengan distress ringan
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['bebas4']) . ' Bebas<br>
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['bebas_5']) . ' Bebas<br>
+				</td>
+				<td>Keadaan Umum <br> ' . $decodedData['keadaan_umum'] . '</td>
+
+			</tr>
+			<tr>
+				<td>Pernapasan</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['nafas_spotan_henti']) . 'Sumbatan total <br>
+				
+					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_berat']) . 'Berhenti nafas spontan / Hipoventilasi <br> 
+
+					' . checkboxrm2b($decodedData['distres_abdominal']) . 'Distress pernafasan berat pernafasan abdominal, retraksi dada berat (+), sianosisa akut <br>
+
+					' . checkboxrm2b($decodedData['tidak_mampu_bicara']) . 'Tidak mampu berbicara <br> 
+
+					' . checkboxrm2b($decodedData['frekuensi_nafas_kecil_10menit']) . 'Frekuensi nafas lebih kecil 10 x/menit <br> 
+
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['nafas_spontan_plus_1']) . 'Nafas spontan (+) <br>
+				
+					' . checkboxrm2b($decodedData['distress_pernafasan_moderate_1']) . 'Distress pernafasan moderate (pernafasan abdominal, retraksi dada sedang (+), kulit pucat) <br> 
+
+					' . checkboxrm2b($decodedData['bicara_hanya_satu_kata_1']) . 'Bicara hanya satu kata <br>
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['nafas_spontan_plus_2']) . 'Nafas spontan (+) <br>
+				
+					' . checkboxrm2b($decodedData['distres_pernapasan_moderate_2']) . 'Distress pernafasan moderate (pernafasan abdominal, bicara pendek-pendek (+), kulit kemerahan)
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['nafas_spontan_plus_3']) . 'Nafas spontan (+) <br>
+				
+					' . checkboxrm2b($decodedData['distres_penapasan_mines_1']) . 'Nafas spontan (-) <br> 
+
+					' . checkboxrm2b($decodedData['dapat_berkomunikasi_baik_1']) . 'Dapat berkomunikasi baik (kalimat penuh) <br>
+				</td>
+				<td>
+					' . checkboxrm2b($decodedData['nafas_spontan_plus_4']) . 'Nafas spontan (+) <br>
+				
+					' . checkboxrm2b($decodedData['distres_penapasan_mines_2']) . 'Nafas spontan (-) <br> 
+
+					' . checkboxrm2b($decodedData['dapat_berkomunikasi_baik_2']) . 'Dapat berkomunikasi baik (kalimat penuh) <br>
+				</td>
+				<td>
+					Suhu &nbsp;' . $decodedData['suhu'] . ' &nbsp; °C <br>
+					SpO2 &nbsp;' . $decodedData['sa02'] . ' &nbsp; % <br>
+					Nadi &nbsp;' . $decodedData['nadi'] . ' &nbsp; x/menit 
+				</td>
+			</tr>
+
+			<tr>
+				<td>Sirkulasi</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['henti_jantung_1']) . 'Henti jantung <br>
+				
+					' . checkboxrm2b($decodedData['tidak_mampu_bicara_1']) . 'Tidak mampu berbicara <br> 
+
+					' . checkboxrm2b($decodedData['gangguan_hemodinamik_berat_1']) . 'Gangguan hemo dinamik berat (akral dingin, pucat, kebiruan, perfusi buruk) <br>
+
+					' . checkboxrm2b($decodedData['nadi_perifer_minus_1']) . 'Nadi perifer (-) <br> 
+
+					' . checkboxrm2b($decodedData['perdarahan_tdk_terkontrol_1']) . 'Perdarahan berat tidak terkontrol <br> 
+				</td>
+
+
+				<td>
+					' . checkboxrm2b($decodedData['nadi_teraba_1']) . 'Nadi teraba <br>
+				
+					' . checkboxrm2b($decodedData['gangguan_hemodinamik_sedang_2']) . 'Tidak mampu berbicara <br> 
+
+					' . checkboxrm2b($decodedData['gangguan_hemodinamik_berat_1']) . 'Gangguan hemo dinamik sedang (akral dingin, pucat, kulit basah) <br>
+
+					' . checkboxrm2b($decodedData['takikardi_moderate_1']) . 'Takikardi moderate <br> 
+
+					' . checkboxrm2b($decodedData['kehilangan_darah_1']) . 'Kehilangan banyak darah <br> 
+
+					' . checkboxrm2b($decodedData['tanda_dehidrasi_plus_1']) . ' Tandadehidrasi berat (+) <br> 
+
+					' . checkboxrm2b($decodedData['pengisian_kapiler_sedang_2']) . ' Pengisian kapiler 2-4 detik <br> 
+				</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['sirkulasi_plus_3']) . 'Sirkulasi (+)<br>
+				
+					' . checkboxrm2b($decodedData['gangguan_ringan_3']) . 'Gangguan hemo dinamik ringan (denyut nadi perifer teraba, kulit pucat, akral hangat) <br> 
+
+					' . checkboxrm2b($decodedData['takikardi_ringan_1']) . 'Takikardi ringan <br>
+
+					' . checkboxrm2b($decodedData['tanda_dehidrasi_sedang_1']) . 'Tandadehidrasi sedang (+) <br> 
+				</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['nadi_teraba_plus_4_1']) . 'Nadi teraba <br>
+				
+					' . checkboxrm2b($decodedData['gangguan_hemodinamik_4_1']) . 'Gangguan hemodinamik (-) <br> 
+
+					' . checkboxrm2b($decodedData['tanpa_dinamik_4_1']) . 'Gangguan hemo dinamik sedang (akral dingin, pucat, kulit basah) <br>
+
+					' . checkboxrm2b($decodedData['takikardi_moderate_1']) . 'Tanpa gangguan hemo dinamik <br> 
+
+					' . checkboxrm2b($decodedData['denyut_nadi_hangat_4_1']) . 'Denyut nadi perifer teraba <br> 
+
+					' . checkboxrm2b($decodedData['kulit_pucat_4_1']) . ' Kulit pucat kemerahan, akral hangat <br> 
+				</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['nadi_teraba_5_1']) . 'Nadi teraba<br>
+				
+					' . checkboxrm2b($decodedData['tanpa_gangguan_5_2']) . 'Tanpa gangguan hemo dinamik<br> 
+
+					' . checkboxrm2b($decodedData['denyut_nadi_5_3']) . 'Denyut nadi perifer teraba<br>
+
+					' . checkboxrm2b($decodedData['kulit_kemerahan_akral_hangat_5_4']) . 'Kulit kemerahan, akral hangat<br> 
+				</td>
+
+				<td>
+					Frekuensi Nafas &nbsp; ' . $decodedData['nafas_k'] . '&nbsp; x/menit <br>
+
+					Tinggi Darah &nbsp; ' . $decodedData['td_K'] . '&nbsp; mmHg <br>
+
+					Riwayat Alergi &nbsp; ' . $decodedData['riwayat_'] . '  <br>					
+				</td>
+			</tr>
+
+			<tr>
+				<td>Kesadaran</td>
+				<td>' . checkboxrm2b($decodedData['gcs']) . 'GCS</td>
+				<td>' . checkboxrm2b($decodedData['gcs12']) . 'GCS 9-12</td>
+				<td>' . checkboxrm2b($decodedData['gcs13']) . 'GCS  13</td>
+				<td>' . checkboxrm2b($decodedData['gcs14']) . 'GCS 14</td>
+				<td>' . checkboxrm2b($decodedData['gcs_15']) . 'GCS 15</td>
+				<td>' . checkboxrm2b($decodedData['riwayat_alergi_dewasa']) . 'Riwayat Alergi</td>
+			</tr>
+
+			<tr>
+				<td>Tanda Lain</td>
+				<td></td>
+				<td>
+				
+					' . checkboxrm2b($decodedData['tanda_lain_penurunan_aktivitas']) . 'Penurunan aktivitas berat (kontak mata (-), tegangan otot menurun)<br>
+				
+					' . checkboxrm2b($decodedData['tanda_lain_kontak_mata']) . '
+					Kontak mata (-) Nyeri hebat Mengerang kesakitan
+					Gangguan neurovascular berat (nadi sukar diraba, akral dingin, sensasi rasa (-), pergerakan (-), pengisian kapiler)<br> 
+				
+				</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['tanda_lain_nyeri_sedang']) . 'Nyeri sedang – berat (pasien dapat menunjukkan letak nyeri, kulit tampak pucat, memohon-analgesia)<br>
+
+					' . checkboxrm2b($decodedData['tanda_lain_kontak_mata_dipanggil']) . 'Kontak mata saat dipanggil / terganggu<br> 
+
+					' . checkboxrm2b($decodedData['tanda_lain_gangguan_neorovaskular']) . 'Gangguan neorovaskular sedang, nadi teraba, akral dingin, sensasi rasa (+), pergerakan (+), pengisian kapiler <br> 
+				</td>
+
+
+				<td>
+					' . checkboxrm2b($decodedData['tanda_lain_nyeri_pasien']) . 'Nyeri sedang (pasien sadar, kulit hangat kemerahan, meminta analgesia)<br>
+
+					' . checkboxrm2b($decodedData['tanda_lain_tenang_kontak_mata']) . 'Tenang, ada kontak mata<br> 
+
+					' . checkboxrm2b($decodedData['tanda_lain_neurovascular_ringan']) . 'Gangguan neurovascular ringan (nadi teraba, akral hangat, sensasi rasa (+), pergerakan (+), pengisian kapiler (normal))<br> 
+				</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['tanda_lain_gejala_imunisasi']) . 'Gejala klinis (-) Rencana imunisasi
+					Nyeri telinga tidak demam
+					Sakit dengan gejala ringan
+					Lebam post trauma ringan<br>
+
+				</td>
+
+				<td>
+					' . checkboxrm2b($decodedData['obat_lainnya']) . 'Obat<br>
+
+					' . checkboxrm2b($decodedData['obat_lain_lain']) . 'Lain-lain<br> 
+
+					' . checkboxrm2b($decodedData['obat_gcs_lainnya']) . 'Gcs<br> 
+				</td>
+			</tr>
+
+			<tr>
+				<td>Respon Time</td>
+				<td>' . checkboxrm2b($decodedData['immediate']) . ' Immediate</td>
+				<td>' . checkboxrm2b($decodedData['10menit_under']) . ' 10 menit</td>
+				<td>' . checkboxrm2b($decodedData['30menit_under']) . ' 30 menit</td>
+				<td>' . checkboxrm2b($decodedData['60menit_under']) . ' 60 menit</td>
+				<td>' . checkboxrm2b($decodedData['120menit_under']) . ' 120 menit</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<td>Obserbasi</td>
+				<td>R.Resusitasi</td>
+				<td>R.Resusitasi/R.Obserbasi</td>
+				<td>R.Obserbasi</td>
+				<td>R.Obserbasi</td>
+				<td>R.Obserbasi</td>
+				<td>Tanggal <br>' . $decodedData['tanggal_2'] . '</td>
+			</tr>
+
+			<tr>
+				<td colspan="5">
+					' . checkboxrm2b($decodedData['emergency3']) . 'Emergency
+				</td>
+				<td rowspan="2" colspan="2">
+					Petugas Operator<br>
+					';
+
+		$QRperawatTriase = $decodedData["perawat_pengkaji"];
+		$perawatTriase = $this->to_safe_filename($QRperawatTriase) . '.jpg';
+		$path_ttd_server_perawatTriase = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $perawatTriase;
+		$path_ttd_url_perawatTriase = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $perawatTriase;
+
+		// Awal HTML
+		// Cek jika path valid dan file ada
+		$html1 .= '<img src="' . $path_ttd_server_perawatTriase . '" width="80" height="80" /><br>
+			' . $decodedData['perawat_pengkaji'] . '
+		';
+
+		$html1 .= '
+				</td>
+			</tr>
+			<tr>
+				<td colspan="5">
+					' . checkboxrm2b($decodedData['false_emergency3']) . ' False Emergency
+				</td>
+			</tr>
+		</table>
+	';
+		$pdf->writeHTML($html1, true, false, true, false, '');
+	}
+	// ============== rm2b triase ========================= //
+	// ============================================================== //
+
+	
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RM 3 URUTAN 4
+	public function _render_pdfrm3($id_kunjungan, $pdf)
+	{
+	    // Ambil data unit
+		$unit = $this->site_model->get_unit_data();
+		$nama_prov = $unit['nama_prov'];
+		$nama_kab = $unit['nama_kab'];
+		$nama_kec = $unit['nama_kec'];
+		$nama_kel = $unit['nama_kel'];
+		$alamat = $unit['alamat'];
+		$city_sign = $unit['nama_kab'];
+		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+
+		// Ambil data settings
+		$getsettings = $this->site_model->get_settings_data();
+		$site_title = $getsettings['nama'];
+		$telepon = $getsettings['telepon'];
+		$email = $getsettings['email'];
+		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+		// Ambil data FORM RME berdasarkan ID
+		$berkas_klaim = 'rm3';
+		$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
+		if (!$formData) {
+            return;
+        }
+		$link = $formData->nama_berkas;
+		$jsonRaw = $formData->data_json;
+		$id_kunjungan = $formData->id_kunjungan;
+		$id_pasien_rme = $formData->id_pasien_rme;
+		$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+		$idBerkas = $decodedData['id'] ?? null;
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// BATAS AMBIL DATA
+		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+		if ($get_id_konten->num_rows() > 0) {
+			$id_poli = $get_id_konten->row()->id_poly;  
+			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
+			
+			if ($admission_id_kunjungan == NULL) {
+				// DATA DARI ANTRIAN
+				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+				$tgl_admit2 = date($post->waktu_masuk);
+				$tgl_admit = format_indo(date($post->waktu_masuk));
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$nama_poli = $post->nama_poli;
+				$nama_dokter = $post->nama_dokter;
+				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+				// DATA DARI ANTRIAN
+			} else {
+				// DATA DARI ADMISSION
+				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$tgl_admit2 = $post->tgl_admit;
+				$post->umur = countumur($post->tanggal_lahir);
+				$tgl_admit = format_indo(date($post->tgl_admit));
+				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+				$nama_lantai = $post->nama_lantai;
+				$nama_dokter = $post->nama_dokter;
+				$nama_poli = $post->nama_poli;
+				$nama_ruangan = $post->nama_ruangan;
+				$no_bad = $post->no_bad;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$kelas = $post->kelas;
+				$lama = countme($post->tgl_admit);
+				// DATA DARI ADMISSION
+			}
+		} else {
+			redirect('backend/data_klaim');
+		}
+		// BATAS AMBIL DATA
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		// Simpan data perawat jika user level 13
+		$levelUser = $this->session->all_userdata()['level'];
+		if ($levelUser == 13) {
+			$post->id_perawat = $this->session->all_userdata()['id'];
+			$post->nama_perawat = $this->session->all_userdata()['name'];
+		}
+
+		$postmenu = $this->admission_model->get_menu($link);
+		$judulRM = $postmenu->isi;
+		$namaRM = $postmenu->rm;
+		$linkRM = $postmenu->link;
+		$dokters_rm3 = $decodedData['dokter_umum'];
+		// $result_dokter = $this->data_klaim_model->get_karyawan_by_nama($dokters);
+		
+		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
+		// $imagesttd = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
+		// ... Inisialisasi PDF seperti sebelumnya
+
+
+	    $pdf->AddPage();
+		$pdf->SetFont('times', '', 11);
+
+		// HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
+		$pdf->SetFont('times','B',16);
+		$pdf->Cell(190,4,$site_title,0,1,'C');
+		$pdf->SetFont('times','B',10);
+		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
+		$pdf->Cell(10,4,'',0,1);
+		$pdf->writeHTML("<hr>", true, false, false, false, '');
+
+		// FONT UTAMA
+		$pdf->SetFont('times','',10);
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+		// =================== HALAMAN PERTAMA ====================
+		$html1 = '
+	    <h3 align="right">' . $namaRM . '</h3>
+	    <h2 align="center">' . $judulRM . '</h2>
+
+	    <table class="table-borderless" cellpadding="2" cellspacing="0" width="100%">
+	        <tr>
+	            <td><b>Dari Poliklinik/ IGD : </b>' . $nama_poli . '</td>
+	        </tr>
+	        <tr>
+	            <td><b>Kepada YTH </b></td>
+	        </tr>
+	        <tr>
+	            <td><b>Petugas Pendaftaran Pasien Rawat Inap</b></td>
+	        </tr>
+	        <tr>
+	            <td><b>Di Tempat,</b></td>
+	        </tr>
+	        
+	    </table>
+	    <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%" style="margin-bottom:15px;">
+	    	<tr>
+	            <td width="20%"><b>Kelas/ Ruangan</b></td><td width="5%"> : </td><td width="75%">' . $nama_ruangan . '</td>
+	        </tr>
+	        <tr>
+	            <td width="20%"><b>Nama</b></td><td width="5%"> : </td><td width="75%">' . $nama_pasien . '</td>
+	        </tr>
+	        <tr>
+	            <td width="20%"><b>Tanggal Lahir</b></td><td width="5%"> : </td><td width="75%">' . $tgl_lahir . '</td>
+	        </tr>
+	        <tr>
+	            <td width="20%"><b>Jenis Kelamin</b></td><td width="5%"> : </td><td width="75%">' . $jenkel . '</td>
+	        </tr>
+	        <tr>
+	            <td width="20%"><b>No. RM</b></td><td width="5%"> : </td><td width="75%">' . $no_rm . '</td>
+	        </tr>
+	        <tr>
+	            <td width="20%"><b>Pekerjaan</b></td><td width="5%"> : </td><td width="75%">' . $nama_pekerjaan . '</td>
+	        </tr>
+	        <tr>
+	            <td width="20%"><b>Diagnosa</b></td><td width="5%"> : </td><td width="75%">' . $decodedData['diagnosa'] . '</td>
+	        </tr>
+	        <tr>
+	            <td width="20%"><b>Alamat</b></td><td width="5%"> : </td><td width="75%">' . $alamatt . '</td>
+	        </tr>
+	    </table>';
+
+	    $identifikasiMasuk = $decodedData['identifikasi_pasien_masuk'];
+		$opsiIdentifikasi = [
+		    'Preventif',
+		    'Kuratif',
+		    'Paliatif',
+		    'Rehabilitatif'
+		];
+
+		// Jika bisa lebih dari satu, ubah ke array
+		$selectedItems = array_map('trim', explode(',', strtolower($identifikasiMasuk)));
+
+		$html1 .= '<br/><br/><table cellpadding="5" cellspacing="0" width="70%">
+		    <tr>
+		        <td colspan="' . count($opsiIdentifikasi) . '"><b>Identifikasi Pasien Masuk:</b></td>
+		    </tr>
+		    <tr>';
+
+		foreach ($opsiIdentifikasi as $opsi) {
+		    $checked = in_array(strtolower($opsi), $selectedItems) ? '[v]' : '[ ]';
+		    $html1 .= '<td><b>' . $checked . '</b> ' . $opsi . '</td>';
+		}
+
+		$html1 .= '</tr>
+		</table>';
+
+
+		// =================== TTD MASUKKAN KE DALAM =================== //
+        $safe_filename_dokters_rm3 = $this->to_safe_filename($dokters_rm3) . '.jpg';
+		$path_ttd_server_dokters_rm3 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm3;
+		$path_ttd_url_dokters_rm3 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm3;
+		$html1 .= '<br/><h4 align="right">'.$nama_kab. ', ' . date('d / m / Y', strtotime($decodedData['tanggal_city'])) .'</h4>
+		           <h4 align="right">Dokter yang memeriksa,</h4>';
+		if (file_exists($path_ttd_server_dokters_rm3)) {
+		    $html1 .= '<div align="right">
+		                   <img src="' . $path_ttd_url_dokters_rm3 . '" width="80" height="80" />
+		               </div>';
+		}
+		// Nama dokter tetap ditampilkan
+		$html1 .= '<br/><span align="right">' . $decodedData['dokter_umum'] . '</span><br/>';
+		// =================== TTD MASUKKAN KE DALAM =================== //
+		
+
+		// CETAK HALAMAN 1
+		$pdf->writeHTML($html1, true, false, true, false, '');
+	}
+	// RM 3 URUTAN 4
+	//////////////////////////////////////////////////////////////////////////////////////////
+    
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RM 7 URUTAN 5
+	public function _render_pdfrm7($id_kunjungan, $pdf)
+	{
+	    // Ambil data unit
+	    $unit = $this->site_model->get_unit_data();
+	    $nama_prov = $unit['nama_prov'];
+	    $nama_kab = $unit['nama_kab'];
+	    $nama_kec = $unit['nama_kec'];
+	    $nama_kel = $unit['nama_kel'];
+	    $alamat = $unit['alamat'];
+	    $city_sign = $unit['nama_kab'];
+	    $lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+
+	    // Ambil data settings
+	    $getsettings = $this->site_model->get_settings_data();
+	    $site_title = $getsettings['nama'];
+	    $telepon = $getsettings['telepon'];
+	    $email = $getsettings['email'];
+	    $images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+	    // Ambil data FORM RME berdasarkan ID
+	    $berkas_klaim = 'rm7_new';
+	    $formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
+	    if (!$formData) {
+	        return;
+	    }
+	    $link = $formData->nama_berkas;
+	    $jsonRaw = $formData->data_json;
+	    $id_kunjungan = $formData->id_kunjungan;
+	    $id_pasien_rme = $formData->id_pasien_rme;
+	    $decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+	    $idBerkas = $decodedData['id'] ?? null;
+
+	    // BATAS AMBIL DATA
+	    $get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+	    if ($get_id_konten->num_rows() > 0) {
+	        $id_poli = $get_id_konten->row()->id_poly;  
+	        $admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
+
+	        if ($admission_id_kunjungan == NULL) {
+	            // DATA DARI ANTRIAN
+	            $post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+	            $tgl_admit2 = date($post->waktu_masuk);
+	            $tgl_admit = format_indo(date($post->waktu_masuk));
+	            $nama_pasien = $post->nama_pasien;
+	            $nik = $post->nik;
+	            $pendidikan_terakhir = $post->pendidikan_terakhir;
+	            $nama_pekerjaan = $post->nama_pekerjaan;
+	            $no_rm = $post->no_rm;
+	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+	            $umur = countumur($post->tanggal_lahir);
+	            $jenkel = $post->jenkel;
+	            $alamatt = $post->alamat;
+	            $nama_agama = $post->nama_agama;
+	            $no_hp = $post->no_handphone;
+	            $nama_jenis_pasien = $post->nama_jenis_pasien;
+	            $nama_poli = $post->nama_poli;
+	            $nama_dokter = $post->nama_dokter;
+	            $tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+	        } else {
+	            // DATA DARI ADMISSION
+	            $post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+	            $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+	            $nama_pasien = $post->nama_pasien;
+	            $nik = $post->nik;
+	            $pendidikan_terakhir = $post->pendidikan_terakhir;
+	            $nama_pekerjaan = $post->nama_pekerjaan;
+	            $no_rm = $post->no_rm;
+	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+	            $umur = countumur($post->tanggal_lahir);
+	            $jenkel = $post->jenkel;
+	            $alamatt = $post->alamat;
+	            $nama_agama = $post->nama_agama;
+	            $no_hp = $post->no_handphone;
+	            $tgl_admit2 = $post->tgl_admit;
+	            $post->umur = countumur($post->tanggal_lahir);
+	            $tgl_admit = format_indo(date($post->tgl_admit));
+	            $tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+	            $nama_lantai = $post->nama_lantai;
+	            $nama_dokter = $post->nama_dokter;
+	            $nama_poli = $post->nama_poli;
+	            $nama_ruangan = $post->nama_ruangan;
+	            $no_bad = $post->no_bad;
+	            $nama_jenis_pasien = $post->nama_jenis_pasien;
+	            $kelas = $post->kelas;
+	            $lama = countme($post->tgl_admit);
+	        }
+	    } else {
+	        redirect('backend/data_klaim');
+	    }
+
+	    // Simpan data perawat jika user level 13
+	    $levelUser = $this->session->all_userdata()['level'];
+	    if ($levelUser == 13) {
+	        $post->id_perawat = $this->session->all_userdata()['id'];
+	        $post->nama_perawat = $this->session->all_userdata()['name'];
+	    }
+
+	    $postmenu = $this->admission_model->get_menu($link);
+	    $judulRM = $postmenu->isi;
+	    $namaRM = $postmenu->rm;
+	    $linkRM = $postmenu->link;
+	    $dokters_rm7 = $decodedData['dokter_umum'];
+	    $dokters_rm7_2 = $decodedData['dokter_umum_2'];
+	    $dokters_rm7_3 = $decodedData['dokter_umum_3'];
+
+	    
+	    $pdf->AddPage();
+	    $pdf->SetFont('times', '', 11);
+
+	    // HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
+	    $pdf->SetFont('times','B',16);
+	    $pdf->Cell(190,4,$site_title,0,1,'C');
+	    $pdf->SetFont('times','B',10);
+	    $pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+	    $pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
+	    $pdf->Cell(10,4,'',0,1);
+	    $pdf->writeHTML("<hr>", true, false, false, false, '');
+
+	    // FONT UTAMA
+	    $pdf->SetFont('times','',10);
+	    
+	foreach ($decodedData['tanggal_mulai'] as $i => $nama_pasien) {
+		$html1 = '
+	    <h3 align="right">' . $namaRM . '</h3>
+	    <h2 align="center">' . $judulRM . '</h2>';
+	    // LANJUT DESAIN PDF NYA DISINI>>>
+	    $html1 .= '<table cellpadding="5" cellspacing="0" style="border:1px solid black; width:100%;">
+	        <tr><td width="15%" style="border:1px solid black;"><b>Tanggal</b></td><td  style="border:1px solid black;" width="18%" ><b>Nama Pasien</b></td><td  style="border:1px solid black;" width="15%" ><b>Umur</b></td><td  style="border:1px solid black;" width="13%" ><b>Kelamin</b></td><td  style="border:1px solid black;" width="16%" ><b>Ruangan</b></td><td  style="border:1px solid black;" width="13%" ><b>Kelas</b></td><td  style="border:1px solid black;" width="10%" ><b>No. RM</b></td></tr>
+	        
+	        <tr><td width="15%" style="border:1px solid black;">' . $tgl_admit . '</td><td  style="border:1px solid black;">' . $decodedData['nama_pasien_dirawat'][$i] . '</td><td  style="border:1px solid black;">' . $decodedData['umur_pasien_dirawat'][$i] . '</td><td  style="border:1px solid black;">' . $decodedData['jenkel_pasien_dirawat'][$i] . '</td><td  style="border:1px solid black;">' . $decodedData['ruangan_pasien_dirawat'][$i] . '</td><td  style="border:1px solid black;">' . $decodedData['kelas_pasien_dirawat'][$i] . '</td><td  style="border:1px solid black;">' . $decodedData['no_rm_pasien_dirawat'][$i] . '</td></tr>
+	    </table>
+	    <h2 align="center"><b>Konsultasi</b></h2>
+	    <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
+	        <tr><td width="20%"><b>Kepada YTH :</b></td><td width="80%">' . $decodedData['nama_yang_terhormat'][$i] . '</td></tr>
+	        <tr>';
+	        $dokterss_rm7 = $decodedData['dokter_pengkaji_pertama'][$i];
+	        $safe_filename_dokters_rm7 = $this->to_safe_filename($dokterss_rm7) . '.jpg';
+			$path_ttd_server_dokters_rm7 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7;
+			$path_ttd_url_dokters_rm7 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7;
+
+
+			$html1 .= '<td width="20%"><b>T.S Dr</b></td>';
+			if (file_exists($path_ttd_server_dokters_rm7)) {
+			    $html1 .= '<td width="80%"><div align="left">
+			                   <img src="' . $path_ttd_url_dokters_rm7 . '" width="80" height="80" />
+			               </div>';
+			}
+			// Nama dokter tetap ditampilkan
+			$html1 .= '' . $decodedData['dokter_pengkaji_pertama'][$i] . '</td>';
+
+	        $html1 .='</tr>
+	        <tr><td width="20%"><b>Ahli :</b></td><td width="80%">' . $decodedData['nama_ahli'][$i] . '</td></tr>
+	        <tr><td width="20%"><b>Dengan Hormat,</b></td></tr>
+	        <tr><td width="100%"><b>Mohon konsultasi penanganan lebih lanjut terhadap pasien tersebut diatas yang kami rawat dengan</b></td></tr>
+	        <tr><td width="20%"><b>Diagnosa :</b></td><td width="80%">' . $decodedData['diagnosa_pertama_nama'][$i] . '</td></tr>
+	        <tr><td width="20%"><b>Terapi Sementara :</b></td><td width="80%">' . $decodedData['terapi_sementara'][$i] . '</td></tr>
+	        <tr><td width="20%"><b>Pemeriksaan yang telah dilakukan :</b></td><td width="80%">' . $decodedData['pemeriksaan_dilakukan'][$i] . '</td></tr>
+	    </table>';
+	    $dokter_rm7_2 = $decodedData['dokter_melakukan_konsultasi_nama'][$i];
+	    $safe_filename_dokters_rm7_2 = $this->to_safe_filename($dokter_rm7_2) . '.jpg';
+		$path_ttd_server_dokters_rm7_2 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_2;
+		$path_ttd_url_dokters_rm7_2 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_2;
+
+		$html1 .= '<h4 align="right">' . $decodedData['dokter_melakukan_konsultasi_nama'][$i] . '</h4>
+		           <h4 align="right">Salam Sejawat,</h4>';
+		if (file_exists($path_ttd_server_dokters_rm7_2)) {
+		    $html1 .= '<div align="right">
+		                   <img src="' . $path_ttd_url_dokters_rm7_2 . '" width="80" height="80" />
+		                   <h4 align="right">' . $decodedData['dokter_melakukan_konsultasi_nama'][$i] . '</h4>
+		               </div>
+		               ';
+		}
+		// Nama dokter tetap ditampilkan
+		$html1 .= '<br><h2 align="center"><b>Jawaban Konsultasi</b></h2>';
+		$html1 .= '<h4 align="right">' . $decodedData['tanggal_konsul'][$i] . '</h4>';
+
+
+		$dokter_rm7_jawab = $decodedData['dokter_menjawab_konsul'][$i];
+	    $safe_filename_dokters_rm7_jawab = $this->to_safe_filename($dokter_rm7_jawab) . '.jpg';
+		$path_ttd_server_dokters_rm7_jawab = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_jawab;
+		$path_ttd_url_dokters_rm7_jawab = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_jawab;
+
+		$html1 .= '<h4 align="left">Yth.T.S</h4>';
+		if (file_exists($path_ttd_server_dokters_rm7_jawab)) {
+		    $html1 .= '<div align="left">
+		                   <img src="' . $path_ttd_url_dokters_rm7_jawab . '" width="80" height="80" />
+		               </div>';
+		}
+		// Nama dokter tetap ditampilkan
+		$html1 .= '<h4 align="left">' . $decodedData['dokter_menjawab_konsul'][$i] . '</h4>';
+
+	    
+		$html1 .='<table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
+	        <tr><td width="20%"><b>Dengan Hormat, </b></td></tr>
+	        <tr><td width="100%"><b>Mengenai pasien yang dikonsulkan pada pemeriksaan os ini didapati :</b></td></tr>
+	        <tr><td width="100%">' . $decodedData['pemeriksaan_konsul'][$i] . '</td></tr>
+	        <tr><td width="20%"><b>Advis :</b></td><td width="80%">' . $decodedData['advis'][$i] . '</td></tr>
+	    </table>';
+
+	    $html1 .= '<table style="width:100%; border-collapse: collapse;">
+		    <tr>
+		        <th style="width:15%; text-align:left; padding:4px;"><b>O.S** :</b></th>
+		        <td style="width:70%;padding:4px;">';
+
+		$selectedItems = [];
+		if ($decodedData['dirawat_check_os'][$i] === 'on') {
+		    $selectedItems[] = 'dirawat bersama diambil';
+		}
+		if ($decodedData['dikembalikan_check_os'][$i] === 'on') {
+		    $selectedItems[] = 'dikembalikan';
+		}
+		if ($decodedData['alih_check_os'][$i] === 'on') {
+		    $selectedItems[] = 'alih (sementara / selanjutnya)';
+		}
+
+		$opsiList = [
+		    'dirawat bersama diambil',
+		    'dikembalikan',
+		    'alih (sementara / selanjutnya)'
+		];
+
+		$html1 .= implode('', array_map(function($opsi) use ($selectedItems) {
+		    $checked = in_array(strtolower($opsi), array_map('strtolower', $selectedItems)) ? '[v]' : '[ ]';
+		    return '<b>' . $checked . '</b> ' . $opsi.'&nbsp;&nbsp;';
+		}, $opsiList));
+
+		$html1 .= '</td>
+		    </tr>
+		</table>';
+
+
+
+		$dokter_rm7_3 =  $decodedData['dokter_akhir_konsultasi'][$i];
+		$safe_filename_dokters_rm7_3 = $this->to_safe_filename($dokter_rm7_3) . '.jpg';
+		$path_ttd_server_dokters_rm7_3 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_3;
+		$path_ttd_url_dokters_rm7_3 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_3;
+
+
+		$html1 .= '<h4 align="right">Salam Sejawat,</h4>';
+		if (file_exists($path_ttd_server_dokters_rm7_3)) {
+		    $html1 .= '<div align="right">
+		                   <img src="' . $path_ttd_url_dokters_rm7_3 . '" width="80" height="80" />
+		               </div>';
+		}
+		// Nama dokter tetap ditampilkan
+		$html1 .= '<h4 align="right">' . $decodedData['dokter_akhir_konsultasi'][$i] . '</h4>';
+		$pdf->writeHTML($html1, true, false, true, false, '');
+		$pdf->AddPage();
+	}
+	    
+	    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	    
+
+	}
+	// RM 7 URUTAN 5
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RM 12c URUTAN 10
+	public function _render_pdfrm12c($id_kunjungan, $pdf)
+	{
+	    // Ambil data unit
+	    $unit = $this->site_model->get_unit_data();
+	    $nama_prov = $unit['nama_prov'];
+	    $nama_kab = $unit['nama_kab'];
+	    $nama_kec = $unit['nama_kec'];
+	    $nama_kel = $unit['nama_kel'];
+	    $alamat = $unit['alamat'];
+	    $city_sign = $unit['nama_kab'];
+	    $lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+
+	    // Ambil data settings
+	    $getsettings = $this->site_model->get_settings_data();
+	    $site_title = $getsettings['nama'];
+	    $telepon = $getsettings['telepon'];
+	    $email = $getsettings['email'];
+	    $imagesrm12cc = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+		// Ambil data FORM RME berdasarkan ID
+		$berkas_klaim = 'rm12c';
+		$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
+		if (!$formData) {
+            return;
+        }
+		$link = $formData->nama_berkas;
+		$jsonRaw = $formData->data_json;
+		$id_kunjungan = $formData->id_kunjungan;
+		$id_pasien_rme = $formData->id_pasien_rme;
+		$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+		$idBerkas = $decodedData['id'] ?? null;
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// BATAS AMBIL DATA
+		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+		if ($get_id_konten->num_rows() > 0) {
+			$id_poli = $get_id_konten->row()->id_poly;  
+			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
+			
+			if ($admission_id_kunjungan == NULL) {
+				// DATA DARI ANTRIAN
+				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+				$tgl_admit2 = date('Y-m-d H:i:s', strtotime($post->waktu_masuk));
+				$tgl_admit = format_indo(date($post->waktu_masuk));
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$nama_suku = $post->nama_suku;
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$nama_poli = $post->nama_poli;
+				$nama_dokter = $post->nama_dokter;
+				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+				// DATA DARI ANTRIAN
+			} else {
+				// DATA DARI ADMISSION
+				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_suku = $post->nama_suku;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$tgl_admit2 = date('Y-m-d H:i:s', strtotime($post->tgl_admit));
+
+				$post->umur = countumur($post->tanggal_lahir);
+				$tgl_admit = format_indo(date($post->tgl_admit));
+				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+				$nama_lantai = $post->nama_lantai;
+				$nama_dokter = $post->nama_dokter;
+				$nama_poli = $post->nama_poli;
+				$nama_ruangan = $post->nama_ruangan;
+				$no_bad = $post->no_bad;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$kelas = $post->kelas;
+				$lama = countme($post->tgl_admit);
+				// DATA DARI ADMISSION
+			}
+		} else {
+			redirect('backend/data_klaim');
+		}
+		// BATAS AMBIL DATA
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// Simpan data perawat jika user level 13
+		$levelUser = $this->session->all_userdata()['level'];
+		if ($levelUser == 13) {
+			$post->id_perawat = $this->session->all_userdata()['id'];
+			$post->nama_perawat = $this->session->all_userdata()['name'];
+		}
+
+		$postmenu = $this->admission_model->get_menu($link);
+		$judulRM = $postmenu->isi;
+		$namaRM = $postmenu->rm;
+		$linkRM = $postmenu->link;
+		
+	    $pdf->AddPage();
+		$pdf->SetFont('times', '', 11);
+
+		// HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($imagesrm12cc, 10,10, 20, 20, '', '', 1, 0);
+		$pdf->SetFont('times','B',16);
+		$pdf->Cell(190,4,$site_title,0,1,'C');
+		$pdf->SetFont('times','B',10);
+		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
+		$pdf->Cell(10,4,'',0,1);
+		$pdf->writeHTML('<hr style="border:1px solid #000;" />');
+
+		// FONT UTAMA
+		$pdf->SetFont('times','',10);
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+		$html1 = '
+	    <h3 align="right">' . $namaRM . '</h3>
+	    <h2 align="center">' . $judulRM . '</h2>
+
+	    <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
+	    	<tr>
+	    		<td width="50%"><b>Nama Pasien : </b>' . $nama_pasien . '</td>
+	    		<td width="50%"><b>Agama : </b>' . $nama_agama . '</td>
+	        </tr>
+	        <tr>
+	            <td width="50%"><b>Tanggal Lahir : </b>' . $tgl_lahir . '</td>
+	            <td width="50%"><b>Jenis Kelamin : </b>' . $jenkel . '</td>
+	            
+	        </tr>
+	        <tr>
+	        	<td width="50%"><b>No. RM : </b>' . $no_rm . '</td>
+	        	<td width="50%"><b>Suku : </b>' . $nama_suku . '</td>
+	        </tr>
+	    </table>';
+
+	    
+		// Hitung jumlah baris berdasarkan salah satu array, misalnya tanggal_pemeriksaan
+		$valid_index = []; // Kumpulan index baris yang valid
+		foreach ($decodedData['tanggal_pemeriksaan'] as $i => $tgl) {
+			if (!empty($tgl)) {
+				$valid_index[] = $i;
+			}
+		}
+
+
+		$html1 .= '
+		<table border="1" cellpadding="4" cellspacing="0" width="100%">
+			<thead>
+				<tr style="background-color:#fff;">
+					<th rowspan="3" align="center"><b>Tanggal/Jam</b></th>
+					<th colspan="6" align="center"><b>Intake Masuk</b></th>
+					<th colspan="3" align="center"><b>Output/Keluar</b></th>
+					<th rowspan="3" align="center"><b>Nama Perawat</b></th>
+				</tr>
+				<tr style="background-color:#fff;">
+					<th colspan="3" align="center"><b>INTRAVENUS</b></th>
+					<th colspan="3" align="center"><b>MULUT/NGT</b></th>
+					<th rowspan="2" align="center"><b>Urine</b></th>
+					<th rowspan="2" align="center"><b>BAB</b></th>
+					<th rowspan="2" align="center"><b>NGT</b></th>
+				</tr>
+				<tr style="background-color:#fff;">
+					<th align="center"><b>Jenis Cairan</b></th>
+					<th align="center"><b>Jumlah</b></th>
+					<th align="center"><b>Total</b></th>
+					<th align="center"><b>Jenis Makanan</b></th>
+					<th align="center"><b>Jumlah</b></th>
+					<th align="center"><b>Total</b></th>
+				</tr>
+			</thead>
+			<tbody>';
+
+		foreach ($valid_index as $j => $i) {
+			// Format tanggal
+			$tanggal_iso = $decodedData['tanggal_pemeriksaan'][$i];
+			$tanggal_obj = DateTime::createFromFormat('Y-m-d\TH:i', $tanggal_iso);
+			$tanggal_formatted = $tanggal_obj ? $tanggal_obj->format('d/m/Y H:i') : $tanggal_iso;
+
+			$html1 .= '<tr>
+				<td>' . htmlspecialchars($tanggal_formatted) . '</td>
+				<td>' . htmlspecialchars($decodedData['jenis_cairan'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['jumlah'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['total'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['jenis_makanan'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['jumlah_makanan'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['total_makanan'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['urine'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['bab'][$i] ?? '') . '</td>
+				<td>' . htmlspecialchars($decodedData['ngt'][$i] ?? '') . '</td>
+				<td>';
+
+			if ($j == 0) {
+				// Baris pertama, perawat pengkaji
+				$perawat_pengkaji_12c = $decodedData['perawat_pengkaji'];
+				$safe_filename_12c = $this->to_safe_filename($perawat_pengkaji_12c) . '.jpg';
+				$path_server_12c = 'C://xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_12c;
+				$path_url_12c = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_12c;
+
+				if (file_exists($path_server_12c)) {
+					$html1 .= '<img src="' . $path_url_12c . '" width="40" height="40" />';
+				}
+
+				$html1 .= htmlspecialchars($decodedData['perawat_pengkaji']);
+			} else {
+				// Dokter PE untuk baris kedua dan seterusnya
+				$dokter_index = $j - 1;
+				$dokter_nama_12c2 = $decodedData['dokter_pe'][$dokter_index] ?? '-';
+				$safe_filename_12c2 = $this->to_safe_filename($dokter_nama_12c2) . '.jpg';
+				$path_server_12c2 = 'C://xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_12c2;
+				$path_url_12c2 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_12c2;
+
+				if (file_exists($path_server_12c2)) {
+					$html1 .= '<img src="' . $path_url_12c2 . '" width="40" height="40" />';
+				}
+
+				$html1 .= htmlspecialchars($dokter_nama_12c2);
+			}
+
+			$html1 .= '</td></tr>';
+		}
+
+		$html1 .= '</tbody></table>';
+
+
+
+	    // LANJUT DESAIN PDF NYA DISINI>>>
+		$pdf->writeHTML($html1, true, false, true, false, '');
+	}
+	// RM 12c URUTAN 10
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RM CPPT
+	public function _render_pdfrmcppt($id_kunjungan, $pdf)
+	{
+	    // Ambil data unit
+	    $unit = $this->site_model->get_unit_data();
+	    $lokasi = $unit['alamat'] . ', Kelurahan ' . $unit['nama_kel'] . ', Kecamatan ' . $unit['nama_kec'] . ', ' . $unit['nama_kab'] . ', ' . $unit['nama_prov'];
+
+	    // Ambil data settings
+	    $getsettings = $this->site_model->get_settings_data();
+	    $site_title = $getsettings['nama'];
+	    $imagesrmcppt = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+	    // Ambil data FORM RME
+	    $berkas_klaim = 'rm_cppt';
+	    $formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
+	    if (!$formData) return;
+
+	    $link = $formData->nama_berkas;
+	    $jsonRaw = $formData->data_json;
+	    $decodedData = json_decode($jsonRaw, true);
+
+	    // Ambil data kunjungan
+	    $get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+	    if ($get_id_konten->num_rows() > 0) {
+	        $admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
+
+	        if ($admission_id_kunjungan == NULL) {
+	            $post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+	            $no_bpjs = $post->no_bpjs;
+	            $nama_pasien = $post->nama_pasien;
+	            $nik = $post->nik;
+	            $pendidikan_terakhir = $post->pendidikan_terakhir;
+	            $nama_pekerjaan = $post->nama_pekerjaan;
+	            $no_rm = $post->no_rm;
+	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+	            $nama_suku = $post->nama_suku;
+	            $umur = countumur($post->tanggal_lahir);
+	            $jenkel = $post->jenkel;
+	            $alamatt = $post->alamat;
+	            $nama_agama = $post->nama_agama;
+	            $no_hp = $post->no_handphone;
+	            $nama_jenis_pasien = $post->nama_jenis_pasien;
+	            $kelas = $post->klsrawat;
+	            $nama_poli = $post->nama_poli;
+	            $nama_dokter = $post->nama_dokter;
+	            $nama_ruangan = '-';
+	            $kelas = '-';
+	        } else {
+	            $post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+	            // $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+	            $nama_pasien = $post->nama_pasien;
+	            $nik = $post->nik;
+	            $pendidikan_terakhir = $post->pendidikan_terakhir;
+	            $nama_pekerjaan = $post->nama_pekerjaan;
+	            $no_rm = $post->no_rm;
+	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+	            $umur = countumur($post->tanggal_lahir);
+	            $jenkel = $post->jenkel;
+	            $alamatt = $post->alamat;
+	            $nama_suku = $post->nama_suku;
+	            $nama_agama = $post->nama_agama;
+	            $no_hp = $post->no_handphone;
+	            $nama_poli = $post->nama_poli;
+	            $nama_dokter = $post->nama_dokter;
+	            $nama_ruangan = $post->nama_ruangan;
+	            $kelas = $post->klsrawat;
+	        }
+	    } else {
+	        redirect('backend/data_klaim');
+	    }
+
+	    // Simpan data perawat jika level 13
+	    $levelUser = $this->session->userdata('level');
+	    if ($levelUser == 13) {
+	        $post->id_perawat = $this->session->userdata('id');
+	        $post->nama_perawat = $this->session->userdata('name');
+	    }
+
+	    // Ambil data menu
+	    $postmenu = $this->admission_model->get_menu($link);
+	    $judulRM = $postmenu->isi;
+	    $namaRM = $postmenu->rm;
+
+	    $pdf->AddPage();
+	    $pdf->SetFont('times', '', 11);
+
+	    // Header PDF
+	    // HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($imagesrmcppt, 10,10, 20, 20, '', '', 1, 0);
+		$pdf->SetFont('times','B',16);
+		$pdf->Cell(190,4,$site_title,0,1,'C');
+		$pdf->SetFont('times','B',10);
+		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
+		$pdf->Cell(10,4,'',0,1);
+		$pdf->writeHTML("<hr>", true, false, false, false, '');
+
+
+	    // Identitas Pasien
+	    $pdf->SetFont('times','',10);
+	    $html = '
+	    <h3 align="right">' . $namaRM . '</h3>
+	    <h2 align="center">' . $judulRM . '</h2>
+	    <table cellpadding="5" cellspacing="0" width="100%">
+	        <tr>
+	        	<td width="50%"><b>Nama Pasien : </b>' . $nama_pasien . '</td>
+	        	<td width="50%"><b>Agama : </b>' . $nama_agama . '</td>
+	        </tr>
+	        <tr>
+	            <td width="50%"><b>Tanggal Lahir : </b>' . $tgl_lahir . '</td>
+	            <td width="50%"><b>Suku/ Bangsa : </b>' . $nama_suku . '</td>
+	        </tr>
+	        <tr>
+	        	<td width="50%"><b>Jenis Kelamin : </b>' . $jenkel . '</td>
+	        	<td width="50%"><b>Alamat : </b>' . $alamatt . '</td>
+	        </tr>
+	        <tr>
+	        	<td width="50%"><b>No. RM : </b>' . $no_rm . '</td>
+	        	<td width="50%"><b>NIK : </b>' . $nik . '</td>
+	        </tr>
+	        
+	    </table><br/>';
+
+	    // Ambil isi data
+	    $tanggal_jam = $decodedData['tanggal_jam'] ?? [];
+	    $ppa = $decodedData['ppa'] ?? [];
+	    $perawat_nama_cppt = $decodedData['perawat_nama'] ?? [];
+	    $dokter_umum_nama_cppt = $decodedData['dokter_umum_nama'] ?? [];
+	    $soap_s = $decodedData['soap_s'] ?? [];
+	    $soap_o = $decodedData['soap_o'] ?? [];
+	    $soap_a = $decodedData['soap_a'] ?? [];
+	    $soap_p = $decodedData['soap_p'] ?? [];
+	    $instruksi = $decodedData['instruksi'] ?? [];
+
+	    $html .= '<table border="1" cellpadding="5" cellspacing="0" width="100%">
+	    <tr style="font-weight: bold; text-align: center;">
+	        <td width="4%">No</td>
+	        <td width="12%">Tanggal / Jam</td>
+	        <td width="18%">Profesional Pemberi Asuhan</td>
+	        <td width="26%">Hasil Asesmen Pasien dan Pemberian Pelayanan</td>
+	        <td width="20%">Instruksi PPA</td>
+	        <td width="20%">Review & Verifikasi DPJP</td>
+	    </tr>';
+
+	for ($i = 0; $i < count($tanggal_jam); $i++) {
+	    if (empty($tanggal_jam[$i]) && empty($ppa[$i])) continue;
+
+	    $tgljam = !empty($tanggal_jam[$i]) ? date('d-m-Y H:i', strtotime($tanggal_jam[$i])) : '-';
+	    $ppa_val = $ppa[$i] ?? '-';
+	    $s = nl2br($soap_s[$i] ?? '-');
+	    $o = nl2br($soap_o[$i] ?? '-');
+	    $a = nl2br($soap_a[$i] ?? '-');
+	    $p = nl2br($soap_p[$i] ?? '-');
+	    $instr = nl2br($instruksi[$i] ?? '-');
+	    $dokter_cppt = $dokter_umum_nama_cppt[$i] ?? '-';
+	    $perawat_cppt = $perawat_nama_cppt[$i] ?? '-';
+
+	    $soap_all = "<b>S:</b> $s<br/><b>O:</b> $o<br/><b>A:</b> $a<br/><b>P:</b> $p";
+
+	    // === QR Perawat ===
+	    $safe_perawat = $this->to_safe_filename($perawat_cppt) . '.jpg';
+	    $path_qr_server_perawat = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_perawat;
+	    $path_qr_url_perawat = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_perawat;
+
+	    $ppa_with_qr = file_exists($path_qr_server_perawat)
+	        ? '<img src="' . $path_qr_url_perawat . '" width="60" height="60" /><br/>'
+	        : '-<br/>' . $perawat_cppt;
+	    $ppa_with_qr .= nl2br($ppa_val) . '<br/>' . $perawat_cppt;
+
+	   
+	    // === QR Dokter ===
+	    $safe_dokter = $this->to_safe_filename($dokter_cppt) . '.jpg';
+	    $path_qr_server_dokter = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_dokter;
+	    $path_qr_url_dokter = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_dokter;
+
+	    $qr_html_dokter = file_exists($path_qr_server_dokter)
+	        ? '<img src="' . $path_qr_url_dokter . '" width="60" height="60" /><br/>' . $dokter_cppt
+	        : '-<br/>' . $dokter_cppt;
+
+	    // === Tulis baris tabel PDF ===
+	    $html .= "<tr>
+	        <td align='center'>" . ($i + 1) . "</td>
+	        <td>$tgljam</td>
+	        <td align='center'>$ppa_with_qr</td>
+	        <td>$soap_all</td>
+	        <td>$instr</td>
+	        <td align='center'>$qr_html_dokter</td>
+	    </tr>";
+	}
+
+
+	$html .= '</table>';
+
+
+	    $pdf->writeHTML($html, true, false, true, false, '');
+	}
+	// RM 6 URUTAN 8
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// RM 15e URUTAN 
+	public function _render_pdfrm15e($id_kunjungan, $pdf)
+	{
+		// Ambil data unit
+		$unit = $this->site_model->get_unit_data();
+		$nama_prov = $unit['nama_prov'];
+		$nama_kab = $unit['nama_kab'];
+		$nama_kec = $unit['nama_kec'];
+		$nama_kel = $unit['nama_kel'];
+		$alamat = $unit['alamat'];
+		$city_sign = $unit['nama_kab'];
+		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+
+		// Ambil data settings
+		$getsettings = $this->site_model->get_settings_data();
+		$site_title = $getsettings['nama'];
+		$telepon = $getsettings['telepon'];
+		$email = $getsettings['email'];
+		$imagesrm15e = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+		// Ambil data FORM RME berdasarkan ID
+		$berkas_klaim = 'rm15e';
+		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
+		if (!$formData) {
+			return;
+		}
+		$link = $formData->nama_berkas;
+		$jsonRaw = $formData->data_json;
+		$id_kunjungan = $formData->id_kunjungan;
+		$id_pasien_rme = $formData->id_pasien_rme;
+		$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+		$idBerkas = $decodedData['id'] ?? null;
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// BATAS AMBIL DATA
+		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+		if ($get_id_konten->num_rows() > 0) {
+			$id_poli = $get_id_konten->row()->id_poly;
+			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
+
+			if ($admission_id_kunjungan == NULL) {
+				// DATA DARI ANTRIAN
+				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+				$tgl_admit2 = date($post->waktu_masuk);
+				$tgl_admit = format_indo(date($post->waktu_masuk));
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$nama_suku = $post->nama_suku;
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$nama_poli = $post->nama_poli;
+				$nama_dokter = $post->nama_dokter;
+				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+				// DATA DARI ANTRIAN
+			} else {
+				// DATA DARI ADMISSION
+				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_suku = $post->nama_suku;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$tgl_admit2 = $post->tgl_admit;
+				$post->umur = countumur($post->tanggal_lahir);
+				$tgl_admit = format_indo(date($post->tgl_admit));
+				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+				$nama_lantai = $post->nama_lantai;
+				$nama_dokter = $post->nama_dokter;
+				$nama_poli = $post->nama_poli;
+				$nama_ruangan = $post->nama_ruangan;
+				$no_bad = $post->no_bad;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$kelas = $post->kelas;
+				$lama = countme($post->tgl_admit);
+				// DATA DARI ADMISSION
+			}
+		} else {
+			redirect('backend/data_klaim');
+		}
+		// BATAS AMBIL DATA
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// Simpan data perawat jika user level 13
+		$levelUser = $this->session->all_userdata()['level'];
+		if ($levelUser == 13) {
+			$post->id_perawat = $this->session->all_userdata()['id'];
+			$post->nama_perawat = $this->session->all_userdata()['name'];
+		}
+
+		$postmenu = $this->admission_model->get_menu($link);
+		$judulRM = $postmenu->isi;
+		$namaRM = $postmenu->rm;
+		$linkRM = $postmenu->link;
+
+		$pdf->AddPage();
+		$pdf->SetFont('times', '');
+
+		// HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($imagesrm15e, 10, 10, 20, 20, '', '', 1, 0);
+		$pdf->SetFont('times', 'B', 16);
+		$pdf->Cell(190, 4, $site_title, 0, 1, 'C');
+		$pdf->SetFont('times', 'B', 10);
+		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+		$pdf->MultiCell(100, 5, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
+		$pdf->Cell(10, 4, '', 0, 1);
+		$pdf->writeHTML("<hr>", true, false, false, false, '');
+
+		// FONT UTAMA
+		$pdf->SetFont('times', '', 10);
+
+		function checkboxrm15e($value, $label = '')
+		{
+			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+		function radiomarkrm15e($value, $expectedValue, $label)
+		{
+			return ($value === $expectedValue) ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+		$html1 = '
+	    <h3 align="right">' . $namaRM . '</h3>
+	    <h2 align="center">' . $judulRM . '</h2>
+
+
+		<table border="1" cellpadding="8">
+			<tr>
+				<td>
+					Laporan : <br>
+					<table border="1" cellpadding="10">
+						<tr>
+							<td>' . $decodedData['laporan'] . ' ' . str_repeat('<br>', 3) . '</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<h4><b><u>PLACENTA & KETUBAN :</u></b></h4><br>
+
+					<table>
+						<tr>
+							<td width="25%">Lahir Spontan </td>
+							<td width="75%"> : ' . $decodedData['spontan'] . '</td>
+						</tr>
+						<tr>
+							<td width="25%">Crede </td>
+							<td width="75%"> : ' . $decodedData['crede'] . '</td>
+						</tr>
+						<tr>
+							<td width="25%">Manual </td>
+							<td width="75%"> : ' . $decodedData['manual'] . '</td>
+						</tr>
+						<tr>
+							<td width="25%">
+								' . radiomarkrm15e($decodedData['placenta_ketuban'], 'lengkap', 'lengkap') . ' &nbsp;
+								' . radiomarkrm15e($decodedData['placenta_ketuban'], 'tidak', 'tidak') . '
+							</td>
+							<td width="75%"> : ' . $decodedData['input_placenta'] . '</td>
+						</tr>
+						<tr>
+							<td width="25%">Berat Placenta </td>
+							<td width="75%"> : ' . $decodedData['berat_placenta'] . ' gram</td>
+						</tr>
+						<tr>
+							<td width="25%">Diameter Placenta </td>
+							<td width="75%"> : ' . $decodedData['diameter_placenta'] . ' cm</td>
+						</tr>
+						<tr>
+							<td width="25%">tebal Placenta </td>
+							<td width="75%"> : ' . $decodedData['tebal_placenta'] . ' cm</td>
+						</tr>
+						<tr>
+							<td width="100%" align="right">
+								Yang Menolong, <br>
+								' . radiomarkrm15e($decodedData['yg_menolong'], 'dokter', 'dokter') . ' &nbsp;
+								' . radiomarkrm15e($decodedData['yg_menolong'], 'bidan', 'bidan') . ' <br>
+								';
+
+		$QRrmCurratage = $decodedData["dokter_umum"];
+		$rmCurratage = $this->to_safe_filename($QRrmCurratage) . '.jpg';
+		$path_ttd_server_rmCurratage = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $rmCurratage;
+		$path_ttd_url_rmCurratage = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $rmCurratage;
+
+		// Awal HTML
+		// Cek jika path valid dan file ada
+		$html1 .= '<img src="' . $path_ttd_server_rmCurratage . '" width="80" height="80" /><br>
+			' . $decodedData['dokter_umum'] . '
+		';
+
+
+		$html1 .= '
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+
+	    ';
+
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+		$pdf->writeHTML($html1, true, false, true, false, '');
+	}
+	// RM 15e URUTAN 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	// RM 17d 01 laporan anestesi 
+	public function _render_pdfrm17d1($id_kunjungan, $pdf)
+	{
+		// Ambil data unit
+		$unit = $this->site_model->get_unit_data();
+		$nama_prov = $unit['nama_prov'];
+		$nama_kab = $unit['nama_kab'];
+		$nama_kec = $unit['nama_kec'];
+		$nama_kel = $unit['nama_kel'];
+		$alamat = $unit['alamat'];
+		$city_sign = $unit['nama_kab'];
+		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+
+		// Ambil data settings
+		$getsettings = $this->site_model->get_settings_data();
+		$site_title = $getsettings['nama'];
+		$telepon = $getsettings['telepon'];
+		$email = $getsettings['email'];
+		$imagesrm17d1 = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+		// Ambil data FORM RME berdasarkan ID
+		$berkas_klaim = 'rm17d01';
+		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
+		if (!$formData) {
+			return;
+		}
+		$link = $formData->nama_berkas;
+		$jsonRaw = $formData->data_json;
+		$id_kunjungan = $formData->id_kunjungan;
+		$id_pasien_rme = $formData->id_pasien_rme;
+		$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+		$idBerkas = $decodedData['id'] ?? null;
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// BATAS AMBIL DATA
+		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+		if ($get_id_konten->num_rows() > 0) {
+			$id_poli = $get_id_konten->row()->id_poly;
+			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
+
+			if ($admission_id_kunjungan == NULL) {
+				// DATA DARI ANTRIAN
+				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+				$tgl_admit2 = date($post->waktu_masuk);
+				$tgl_admit = format_indo(date($post->waktu_masuk));
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$nama_suku = $post->nama_suku;
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$nama_poli = $post->nama_poli;
+				$nama_dokter = $post->nama_dokter;
+				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+				// DATA DARI ANTRIAN
+			} else {
+				// DATA DARI ADMISSION
+				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_suku = $post->nama_suku;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$tgl_admit2 = $post->tgl_admit;
+				$post->umur = countumur($post->tanggal_lahir);
+				$tgl_admit = format_indo(date($post->tgl_admit));
+				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+				$nama_lantai = $post->nama_lantai;
+				$nama_dokter = $post->nama_dokter;
+				$nama_poli = $post->nama_poli;
+				$nama_ruangan = $post->nama_ruangan;
+				$no_bad = $post->no_bad;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$kelas = $post->kelas;
+				$lama = countme($post->tgl_admit);
+				// DATA DARI ADMISSION
+			}
+		} else {
+			redirect('backend/data_klaim');
+		}
+		// BATAS AMBIL DATA
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// Simpan data perawat jika user level 13
+		$levelUser = $this->session->all_userdata()['level'];
+		if ($levelUser == 13) {
+			$post->id_perawat = $this->session->all_userdata()['id'];
+			$post->nama_perawat = $this->session->all_userdata()['name'];
+		}
+
+		$postmenu = $this->admission_model->get_menu($link);
+		$judulRM = $postmenu->isi;
+		$namaRM = $postmenu->rm;
+		$linkRM = $postmenu->link;
+
+		$pdf->AddPage();
+		$pdf->SetFont('times', '');
+
+		// HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($imagesrm17d1, 10, 10, 20, 20, '', '', 1, 0);
+		$pdf->SetFont('times', 'B', 16);
+		$pdf->Cell(190, 4, $site_title, 0, 1, 'C');
+		$pdf->SetFont('times', 'B', 10);
+		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+		$pdf->MultiCell(100, 5, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
+		$pdf->Cell(10, 4, '', 0, 1);
+		$pdf->writeHTML("", true, false, false, false, '');
+
+		// FONT UTAMA
+		$pdf->SetFont('times', '', 10);
+
+		function checkboxrm17d1($value, $label = '')
+		{
+			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+		function radiomarkrm17d1($value, $expectedValue, $label)
+		{
+			return ($value === $expectedValue) ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+		$html1 = '
+	    <h3 align="right">' . $namaRM . '</h3>
+
+		<table border="1" cellpadding="8">
+			<tr>
+				<td width="55%">
+					<table>
+						<tr>
+							<td width="30%">
+								<img src="' . $imagesrm17d1 . '" width="130" height="130"/>
+							</td>
+							<td width="70%">
+								' . $site_title  . '<br>
+								' . $lokasi . ' <br>
+								' . $telepon . ' <br>
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td width="45%">
+				<br><br>
+					<table>
+						<tr>
+							<td width="40%">Nama</td>
+							<td width="70%">
+								' . $nama_pasien . '
+							</td>
+						</tr>
+						<tr>
+							<td width="40%">Tanggal lahir</td>
+							<td width="70%">
+								' . $tgl_lahir . '
+							</td>
+						</tr>
+						<tr>
+							<td width="40%">Jenis Kelamin</td>
+							<td width="70%">
+								' . $jenkel . '
+							</td>
+						</tr>
+						<tr>
+							<td width="40%">No Rm</td>
+							<td width="70%">
+								' . $no_rm . '
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td><h4><b>PRA INDUKSI</b></h4></td>
+				<td>Ruangan ' . $nama_ruangan . '</td>
+			</tr>
+			<tr>
+				<td><h4><b>LAPORAN ANESTESI</b></h4></td>
+				<td>Tanggal ' . $decodedData['tanggal'] . '</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<table border="1" cellpadding="6">
+						<tr>
+							<td>
+								<b>Spesialis Anestesi: </b><br>
+								' . $decodedData['dokter_umum_anestesi'] . '
+							</td>
+							<td>
+								<b>Spesialis Bedah : </b><br>
+								' . $decodedData['dokter_umum_bedah'] . '
+							</td>
+							<td>
+								<b>Perawat Anesthesi : </b><br>
+								' . $decodedData['perawat_anesthesi'] . '
+							</td>
+						</tr>
+						<tr>
+							<td><b>Diagnosis Pra bedah</b><br>' . $decodedData['diagnosa_prabedah'] . '</td>
+							<td><b>Jenis pembedahan :</b><br>' . $decodedData['jenis_pembedahan'] . '</td>
+							<td><b>Diagnosis pascabedah: :</b><br>' . $decodedData['diagnosa_pascabedah'] . '</td>
+						</tr>
+						<tr>
+							<td colspan="3">
+								<table cellpadding="4">
+									<tr>
+										<td width="20%"><b>Keadaan Prabedah :</b></td>
+										<td width="8%">BB ' . $decodedData['bb'] . '</td>
+										<td width="8%">TB ' . $decodedData['tb'] . '</td>
+										<td width="15%">Gol Darah ' . $decodedData['gol_darah'] . '</td>
+										<td width="8%">RH ' . $decodedData['rh'] . '</td>
+										<td width="10%"></td>
+										<td width="39%">
+											Alergi ' . radiomarkrm17d1($decodedData['alergi'], 'alergi_ya', 'ya') . ' &nbsp;&nbsp;
+											' . radiomarkrm17d1($decodedData['alergi'], 'alergi_tidak', 'tidak') . '
+										</td>
+									</tr>
+									<tr>
+										<td width="20%"></td>
+										<td width="8%">TD ' . $decodedData['td'] . '</td>
+										<td width="8%">Nadi ' . $decodedData['nadi'] . '</td>
+										<td width="15%">Suhu ' . $decodedData['suhu'] . '</td>
+										<td width="8%">Hb ' . $decodedData['hb'] . '</td>
+										<td width="49%">
+										Ht ' . $decodedData['ht'] . '
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="3">
+								<b>Pemeriksaan Fisik</b><br>
+								<table cellpadding="4">
+									<tr>
+										<td width="15%">Jenis Nafas :</td>
+										<td width="15%">' . checkboxrm17d1($decodedData['normal']) . ' normal</td>
+										<td width="55%">' . checkboxrm17d1($decodedData['buka_mulut']) . ' Buka mulut > 2 jari Jarak Thyromental > 3 jari Mallampati I / II Gerakan Leher Maksimal</td>
+										<td width="15%">' . checkboxrm17d1($decodedData['abnormal']) . ' Abnormal</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="3"><b>Anamnesis</b> &nbsp; ' . radiomarkrm17d1($decodedData['anamnesis_auto_1'], 'anamnesis_auto', 'Auto') . ' &nbsp; ' . radiomarkrm17d1($decodedData['anamnesis_allo_1'], 'anamnesis_allo', 'Allo') . ' <br>
+							<table border="1" cellpadding="4">
+								<tr>
+									<td>' . $decodedData['anamnesis'] . '' . str_repeat('<br>', 1) . ' </td>
+								</tr>
+							</table>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="3">
+							<b>Pemeriksaan fisik & penunjang</b> <br>
+								<table border="1" cellpadding="4">
+								<tr>
+									<td>' . $decodedData['pemeriksaan_fisik'] . '' . str_repeat('<br>', 1) . ' </td>
+								</tr>
+							</table>
+							</td>
+						</tr>
+					<tr>
+						<td colspan="3">
+							<b>STATUS FISIK ASA </b>&nbsp;&nbsp;
+							' . (!empty($decodedData['status_fisik_asa']) ?
+			radiomarkrm17d1($decodedData['status_fisik_asa'], $decodedData['status_fisik_asa'], $decodedData['status_fisik_asa'])
+			: '-') . ' &nbsp; Penyulit praanestesi ' . $decodedData['penyulit_praanestesi'] . '
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							' . checkboxrm17d1($decodedData['penyulit_praanestesi']) . ' Ijin operasi &nbsp;
+							' . checkboxrm17d1($decodedData['cek_mesin_anestesi']) . ' Cek mesin anestesi &nbsp;
+							' . checkboxrm17d1($decodedData['cek_suction_unit']) . ' Cek suction unit &nbsp;
+							' . checkboxrm17d1($decodedData['persiapan_obat_obatan']) . ' Persiapan Obat-obatan &nbsp;
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<b>Teknik Anestesi</b> <br>
+							' . checkboxrm17d1($decodedData['ga']) . ' Ga &nbsp;
+							' . checkboxrm17d1($decodedData['spinal']) . ' Spinal &nbsp;
+							' . checkboxrm17d1($decodedData['epidural']) . ' Epidural &nbsp;
+							' . checkboxrm17d1($decodedData['kaudal']) . ' Kaudal &nbsp;
+							' . checkboxrm17d1($decodedData['brachial']) . ' Brachial &nbsp;
+							' . checkboxrm17d1($decodedData['checklist_sebelum_induksi_lain']) . ' Lain-lain &nbsp; ' . $decodedData['input_teknik_anestesi_lain'] . '
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<b>Teknik Khusus:</b> <br>
+							' . checkboxrm17d1($decodedData['hipotensi']) . ' Hipotensi &nbsp;
+							' . checkboxrm17d1($decodedData['ventilasi_satu_paru']) . ' Ventilasi satu paru &nbsp;
+							' . checkboxrm17d1($decodedData['cpb']) . ' cpb &nbsp;
+							' . checkboxrm17d1($decodedData['sirkulatory_arrest']) . ' Sirkulatory Arrest &nbsp;
+							
+							' . checkboxrm17d1($decodedData['teknik_khusus_lain']) . ' Lain-lain &nbsp; ' . $decodedData['input_teknik_khusus_lain'] . '
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<table cellpadding="4">
+								<tr>
+									<td><b>Monitoring:</b> <br>
+							' . checkboxrm17d1($decodedData['spo2']) . ' spo2 &nbsp;
+							' . checkboxrm17d1($decodedData['etco2']) . ' EtCO2 &nbsp;
+							' . checkboxrm17d1($decodedData['nibp']) . ' NIBP &nbsp;
+							' . checkboxrm17d1($decodedData['temp']) . ' Temperatur &nbsp;
+							' . checkboxrm17d1($decodedData['stetoskop']) . ' Stetoskop &nbsp;
+							' . checkboxrm17d1($decodedData['pa_catheter']) . ' PA Catheter &nbsp;
+							' . checkboxrm17d1($decodedData['urine_catheter']) . ' Urine Catheter &nbsp;
+							' . checkboxrm17d1($decodedData['ngt']) . ' Ngt &nbsp;
+							</td>
+							</tr>
+								<tr>
+									<td>
+										' . checkboxrm17d1($decodedData['ekg_lead']) . ' EKG Lead &nbsp;
+										' . checkboxrm17d1($decodedData['cvp']) . ' cvp &nbsp; ' . $decodedData['input_cvp'] . '
+										' . checkboxrm17d1($decodedData['arteri']) . ' arteri Line  &nbsp; ' . $decodedData['input_arteri'] . ';
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<b>Penilaian Pra induksi </b><br>
+							' . $decodedData['penilaian_pra_induksi'] . '
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" align="right">
+							<b>Tanda Tangan Anestesi </b>
+							';
+
+		$QRrmLapAnestesi = $decodedData["tanda_tangan_dokter"];
+		$rmLapAnestesi = $this->to_safe_filename($QRrmLapAnestesi) . '.jpg';
+		$path_ttd_server_rmLapAnestesi = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $rmLapAnestesi;
+		$path_ttd_url_rmLapAnestesi = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $rmLapAnestesi;
+
+		// Awal HTML
+		// Cek jika path valid dan file ada
+		$html1 .= '<br><div align="right"><img src="' . $path_ttd_server_rmLapAnestesi . '" width="80" height="80"/></div>
+			' . $decodedData['tanda_tangan_dokter'] . '
+		';
+
+		$html1 .= '
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		';
+
+
+
+		// LANJUT DESAIN PDF NYA DISINI>>>
+		$pdf->writeHTML($html1, true, false, true, false, '');
+	}
+	// RM 17d 01 laporan anestesi 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// RM 12b URUTAN 9
+	// public function _render_pdfrm12b($id_kunjungan, $pdf)
+	// {
+	//     // Ambil data unit
+	// 	$unit = $this->site_model->get_unit_data();
+	// 	$nama_prov = $unit['nama_prov'];
+	// 	$nama_kab = $unit['nama_kab'];
+	// 	$nama_kec = $unit['nama_kec'];
+	// 	$nama_kel = $unit['nama_kel'];
+	// 	$alamat = $unit['alamat'];
+	// 	$city_sign = $unit['nama_kab'];
+	// 	$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+
+	// 	// Ambil data settings
+	// 	$getsettings = $this->site_model->get_settings_data();
+	// 	$site_title = $getsettings['nama'];
+	// 	$telepon = $getsettings['telepon'];
+	// 	$email = $getsettings['email'];
+	// 	$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+	// 	// Ambil data FORM RME berdasarkan ID
+	// 	$berkas_klaim = 'rm12b';
+	// 	$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
+	// 	if (!$formData) {
+    //         return;
+    //     }
+	// 	$link = $formData->nama_berkas;
+	// 	$jsonRaw = $formData->data_json;
+	// 	$id_kunjungan = $formData->id_kunjungan;
+	// 	$id_pasien_rme = $formData->id_pasien_rme;
+	// 	$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+	// 	$idBerkas = $decodedData['id'] ?? null;
+
+	// 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 	// BATAS AMBIL DATA
+	// 	$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+	// 	if ($get_id_konten->num_rows() > 0) {
+	// 		$id_poli = $get_id_konten->row()->id_poly;  
+	// 		$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
+			
+	// 		if ($admission_id_kunjungan == NULL) {
+	// 			// DATA DARI ANTRIAN
+	// 			$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+	// 			$tgl_admit2 = date($post->waktu_masuk);
+	// 			$tgl_admit = format_indo(date($post->waktu_masuk));
+	// 			$nama_pasien = $post->nama_pasien;
+	// 			$nik = $post->nik;
+	// 			$pendidikan_terakhir = $post->pendidikan_terakhir;
+	// 			$nama_pekerjaan = $post->nama_pekerjaan;
+	// 			$no_rm = $post->no_rm;
+	// 			$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+	// 			$nama_suku = $post->nama_suku;
+	// 			$umur = countumur($post->tanggal_lahir);
+	// 			$jenkel = $post->jenkel;
+	// 			$alamatt = $post->alamat;
+	// 			$nama_agama = $post->nama_agama;
+	// 			$no_hp = $post->no_handphone;
+	// 			$nama_jenis_pasien = $post->nama_jenis_pasien;
+	// 			$nama_poli = $post->nama_poli;
+	// 			$nama_dokter = $post->nama_dokter;
+	// 			$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+	// 			// DATA DARI ANTRIAN
+	// 		} else {
+	// 			// DATA DARI ADMISSION
+	// 			$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+	// 			$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+	// 			$nama_pasien = $post->nama_pasien;
+	// 			$nik = $post->nik;
+	// 			$pendidikan_terakhir = $post->pendidikan_terakhir;
+	// 			$nama_pekerjaan = $post->nama_pekerjaan;
+	// 			$no_rm = $post->no_rm;
+	// 			$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+	// 			$umur = countumur($post->tanggal_lahir);
+	// 			$jenkel = $post->jenkel;
+	// 			$alamatt = $post->alamat;
+	// 			$nama_suku = $post->nama_suku;
+	// 			$nama_agama = $post->nama_agama;
+	// 			$no_hp = $post->no_handphone;
+	// 			$tgl_admit2 = $post->tgl_admit;
+	// 			$post->umur = countumur($post->tanggal_lahir);
+	// 			$tgl_admit = format_indo(date($post->tgl_admit));
+	// 			$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+	// 			$nama_lantai = $post->nama_lantai;
+	// 			$nama_dokter = $post->nama_dokter;
+	// 			$nama_poli = $post->nama_poli;
+	// 			$nama_ruangan = $post->nama_ruangan;
+	// 			$no_bad = $post->no_bad;
+	// 			$nama_jenis_pasien = $post->nama_jenis_pasien;
+	// 			$kelas = $post->kelas;
+	// 			$lama = countme($post->tgl_admit);
+	// 			// DATA DARI ADMISSION
+	// 		}
+	// 	} else {
+	// 		redirect('backend/data_klaim');
+	// 	}
+	// 	// BATAS AMBIL DATA
+	// 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// 	// Simpan data perawat jika user level 13
+	// 	$levelUser = $this->session->all_userdata()['level'];
+	// 	if ($levelUser == 13) {
+	// 		$post->id_perawat = $this->session->all_userdata()['id'];
+	// 		$post->nama_perawat = $this->session->all_userdata()['name'];
+	// 	}
+
+	// 	$postmenu = $this->admission_model->get_menu($link);
+	// 	$judulRM = $postmenu->isi;
+	// 	$namaRM = $postmenu->rm;
+	// 	$linkRM = $postmenu->link;
+		
+	//     $pdf->AddPage();
+	// 	$pdf->SetFont('times', '', 11);
+
+	// 	// HEADER PDF
+	// 	// Matikan GAMBAR HEADER
+	// 	$pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
+	// 	$pdf->SetFont('times','B',16);
+	// 	$pdf->Cell(190,4,$site_title,0,1,'C');
+	// 	$pdf->SetFont('times','B',10);
+	// 	$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+	// 	$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
+	// 	$pdf->Cell(10,4,'',0,1);
+	// 	$pdf->writeHTML("<hr>", true, false, false, false, '');
+
+	// 	// FONT UTAMA
+	// 	$pdf->SetFont('times','',10);
+
+	// 	// LANJUT DESAIN PDF NYA DISINI>>>
+	// 	$html1 .= '
+	//     <h3 align="right">' . htmlspecialchars($namaRM) . '</h3>
+	//     <h2 align="center">' . htmlspecialchars($judulRM) . '</h2>
+
+	//     <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
+	//     	<tr>
+	//             <td width="50%"><b>No. RM : </b>' . htmlspecialchars($no_rm) . '</td>
+	//             <td width="50%"><b>Tanggal Lahir : </b>' . htmlspecialchars($tgl_lahir) . '</td>
+	            
+	//         </tr>
+	//         <tr>
+	//             <td width="50%"><b>Nama Pasien : </b>' . htmlspecialchars($nama_pasien) . '</td>
+	//             <td width="50%"><b>Jenis Kelamin : </b>' . htmlspecialchars($jenkel) . '</td>
+	            
+	//         </tr>
+	//         <tr>
+	//         	<td width="50%"><b>Ruangan : </b>' . htmlspecialchars($nama_ruangan) . '</td>
+	//         	<td width="50%"><b>Agama : </b>' . htmlspecialchars($nama_agama) . '</td>
+
+	//         </tr>
+	//         <tr>
+	//             <td width="50%"><b>Kelas : </b>' . htmlspecialchars($kelas) . '</td>
+	//             <td width="50%"><b>Suku : </b>' . htmlspecialchars($nama_suku) . '</td>
+	//         </tr>
+
+	//     </table>';
+
+	//     // Ambil data dari JSON
+	// 	$tanggal = $decodedData['tanggal'] ?? [];
+	// 	$jam = $decodedData['jam'] ?? [];
+	// 	$catatan_perawat = $decodedData['catatan_perawat'] ?? [];
+	// 	$dokter_umum = $decodedData['dokter_umum'] ?? [];
+	// 	$dokter_umum_nama = $decodedData['dokter_umum_nama'] ?? [];
+	// 	$dokter_umum_qr = $decodedData['dokter_umum_qr'] ?? [];
+
+	// 	// Buat tabel
+	// 	$html1 .= '
+	// 	<table border="1" cellpadding="5" cellspacing="0" width="100%">
+	// 	    <thead>
+	// 	        <tr>
+	// 	        	<th width="4%"><b>No</b></th>
+	// 	            <th width="10%"><b>Tanggal</b></th>
+	// 	            <th width="6%"><b>Jam</b></th>
+	// 	            <th width="40%"><b>Catatan</b></th>
+	// 	            <th width="20%"><b>Dokter Umum</b></th>
+	// 	            <th width="20%"><b>Tanda Tangan</b></th>
+	// 	        </tr>
+	// 	    </thead>
+	// 	    <tbody>';
+
+	// 	for ($i = 0; $i < count($tanggal); $i++) {
+	// 	    $tgl = htmlspecialchars(format_indo(date($tanggal[$i])));
+	// 	    $j = htmlspecialchars($jam[$i]);
+	// 	    $catatan = nl2br(htmlspecialchars($catatan_perawat[$i]));
+	// 	    $dokter = htmlspecialchars($dokter_umum_nama[$i]);
+	// 	    $qr = $dokter_umum_qr[$i];
+
+	// 	    // Jika QR tersedia, masukkan gambar QR
+	// 	    // if (!empty($qr)) {
+	// 	    //     $qrHtml = '<img src="' . BASE_STORAGE . '/pmo/qrcode/' . $qr . '" width="50">';
+	// 	    // } else {
+	// 	    //     $qrHtml = '-';
+	// 	    // }
+
+	// 	    $html1 .= '
+	// 	        <tr>
+		        
+	// 	        	<td width="4%">' . ($i + 1) . '</td>
+	// 	            <td width="10%">' . $tgl . '</td>
+	// 	            <td width="6%">' . $j . '</td>
+	// 	            <td width="40%">' . $catatan . '</td>
+	// 	            <td width="20%">' . $dokter . '</td>';
+
+	// 	        $dokters = $dokter;
+	// 	        $result_dokter = $this->data_klaim_model->get_karyawan_by_nama($dokters);
+	// 	        $path_ttd_server = 'C:/xampp/htdocs/pmo/images/pegawai/' . $result_dokter;
+	// 	        $path_ttd_url = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
+		        
+	// 	        $html1 .= '<td align="center" width="20%">';
+	// 	        if ($result_dokter && file_exists($path_ttd_server)) {
+	// 	            $html1 .= '<div align="center">
+	// 	                           <img src="' . $path_ttd_url . '" width="80" height="80" />
+	// 	                       </div>';
+	// 	        }
+	// 	        $html1 .= htmlspecialchars($dokter) . '</td>';
+	// 	        $html1 .= '</tr>';
+	// 	}
+
+	// 	$html1 .= '
+	// 	    </tbody>
+	// 	</table>';
+
+
+	//     // LANJUT DESAIN PDF NYA DISINI>>>
+	// 	$pdf->writeHTML($html1, true, false, true, false, '');
+	// }
+
+
+
+	
+
+	
+	// ============== RM18 E Laporan operasi ========================= //
+	// ============================================================== //
+
+	public function _render_pdfrm18e($id_kunjungan, $pdf)
+	{
+		// Ambil data unit
+		$unit = $this->site_model->get_unit_data();
+		$nama_prov = $unit['nama_prov'];
+		$nama_kab = $unit['nama_kab'];
+		$nama_kec = $unit['nama_kec'];
+		$nama_kel = $unit['nama_kel'];
+		$alamat = $unit['alamat'];
+		$city_sign = $unit['nama_kab'];
+		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
+		// Ambil data settings
+		$getsettings = $this->site_model->get_settings_data();
+		$site_title = $getsettings['nama'];
+		$telepon = $getsettings['telepon'];
+		$email = $getsettings['email'];
+		$imagesrm18e = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
+
+		// Ambil data FORM RME berdasarkan ID
+		$berkas_klaim = 'rm18e';
+		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
+		if (!$formData) {
+			return;
+		}
+		$link = $formData->nama_berkas;
+		$jsonRaw = $formData->data_json;
+		$id_kunjungan = $formData->id_kunjungan;
+		$id_pasien_rme = $formData->id_pasien_rme;
+		$decodedData = json_decode($jsonRaw, true); // JSON ke array
+
+		$idBerkas = $decodedData['id'] ?? null;
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// BATAS AMBIL DATA
+		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
+		if ($get_id_konten->num_rows() > 0) {
+			$id_poli = $get_id_konten->row()->id_poly;
+			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
+
+			if ($admission_id_kunjungan == NULL) {
+				// DATA DARI ANTRIAN
+				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
+				$tgl_admit2 = date($post->waktu_masuk);
+				$tgl_admit = format_indo(date($post->waktu_masuk));
+				$nama_pasien = $post->nama_pasien;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$nama_poli = $post->nama_poli;
+				$nama_dokter = $post->nama_dokter;
+				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
+				// DATA DARI ANTRIAN
+			} else {
+				// DATA DARI ADMISSION
+				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
+				// $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
+				$nama_pasien = $post->nama_pasien;
+				$no_bpjs = $post->no_bpjs;
+				$nik = $post->nik;
+				$pendidikan_terakhir = $post->pendidikan_terakhir;
+				$nama_pekerjaan = $post->nama_pekerjaan;
+				$no_rm = $post->no_rm;
+				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
+				$umur = countumur($post->tanggal_lahir);
+				$jenkel = $post->jenkel;
+				$alamatt = $post->alamat;
+				$nama_agama = $post->nama_agama;
+				$no_hp = $post->no_handphone;
+				$tgl_admit2 = $post->tgl_admit;
+				$post->umur = countumur($post->tanggal_lahir);
+				$tgl_admit = format_indo(date($post->tgl_admit));
+				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
+				$nama_lantai = $post->nama_lantai;
+				$nama_dokter = $post->nama_dokter;
+				$nama_poli = $post->nama_poli;
+				$nama_ruangan = $post->nama_ruangan;
+				$no_bad = $post->no_bad;
+				$nama_jenis_pasien = $post->nama_jenis_pasien;
+				$kelas = $post->kelas;
+				$nama_hub_pasien = $post->nama_hub_pasien;
+				$alamat_hub_pasien = $post->alamat_hub_pasien;
+				$noHp_hub_pasien = $post->noHp_hub_pasien;
+				$nama_bangsa = $post->nama_bangsa;
+				$hubungan_keluarga_pasien = $post->hubungan_keluarga_pasien;
+				$status_nikah = $post->status_nikah;
+				$nama_suku = $post->nama_suku;
+				$lama = countme($post->tgl_admit);
+				// DATA DARI ADMISSION
+			}
+		} else {
+			redirect('backend/data_klaim');
+		}
+		// BATAS AMBIL DATA
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+		// Simpan data perawat jika user level 13
+		$levelUser = $this->session->all_userdata()['level'];
+		if ($levelUser == 13) {
+			$post->id_perawat = $this->session->all_userdata()['id'];
+			$post->nama_perawat = $this->session->all_userdata()['name'];
+		}
+
+		$postmenu = $this->admission_model->get_menu($link);
+		$judulRM = $postmenu->isi;
+		$namaRM = $postmenu->rm;
+		$linkRM = $postmenu->link;
+
+
+		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
+		// $imagesttdrm025 = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
+
+		// ... Inisialisasi PDF seperti sebelumnya
+
+		$pdf->AddPage();
+		$pdf->SetFont('times', '', 11);
+
+		// HEADER PDF
+		// Matikan GAMBAR HEADER
+		$pdf->Image($imagesrm18e, 10, 10, 20, 20, '', '', 1, 0);
+		$pdf->SetFont('times', 'B', 16);
+		$pdf->Cell(190, 4, $site_title, 0, 1, 'C');
+		$pdf->SetFont('times', 'B', 10);
+		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
+		$pdf->MultiCell(100, 5, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
+		$pdf->Cell(10, 4, '', 0, 1);
+		$pdf->writeHTML("<hr>", true, false, false, false, '');
+
+		// FONT UTAMA
+		$pdf->SetFont('times', '', 11);
+
+
+
+		// =================== HALAMAN PERTAMA ====================
+		function checkboxrm18e($value, $label = '')
+		{
+			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
+		}
+
+		function valueOrDashrm18e($field)
+		{
+			return isset($field) ? htmlspecialchars($field) : '-';
+		}
+
+		$html1 = '
+		<h3 align="right">' . htmlspecialchars($namaRM) . '</h3>
+
+			<table border="1" style="border-collapse: collapse;">
+				<tr>
+					<td align="center" valign="middle" height="100" width="50%"><br><br><br><b>' . htmlspecialchars($judulRM) . '</b></td>
+					<td width="50%">
+						<table style="border-collapse: collapse;">
+							<tr>
+								<td width="30%">
+									No.rm<br>
+									Nama<br>
+									Tanggal Lahir<br>
+									Umur<br>
+									Jenis Kelamin
+								</td>
+								<td width="70%">
+								: ' . $no_rm . '<br>
+								: ' . $nama_pasien . '<br>
+								: ' . $tgl_lahir . '<br>
+								: ' . $umur . '<br>
+								: ' . $jenkel . '<br>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+		</table>
+		';
+
+		$html1 .= '
+			<table border="1" style="border-collapse:collapse;" cellpadding="3">
+				<tr>
+					<td width="35%">
+						Nama Ahli Bedah :<br>
+						' . $decodedData['dokter_umum1'] . '
+					</td>
+					<td width="35%">
+						Nama Asistant :<br>
+						' . $decodedData['nama_asistant'] . '
+					</td>
+					<td width="30%">
+						Nama Perawat :<br>
+						' . $decodedData['nama_perawat'] . '
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						Nama Ahli Anasthesi :<br>
+						' . $decodedData['dokter_umum2'] . '
+					</td>
+					<td colspan="3">
+						Jenis Anasthesi<br>
+						' . $decodedData['jenis_anesthesi'] . '
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						Diagnosa Pre- Operatif :<br>
+						' . $decodedData['diagnosa'] . '
+					</td>
+					<td>
+						Macam Pembedahan <br>
+						<table cellpadding="4">
+							<tr>
+								<td width="37%">
+									' . checkboxrm18e($decodedData['bedah_besar']) . ' Besar
+								</td>
+								<td>
+									' . checkboxrm18e($decodedData['bedah_elective']) . ' Elective
+								</td>
+							</tr>
+							<tr>
+								<td width="37%">
+									' . checkboxrm18e($decodedData['bedah_sedang']) . ' Sedang
+								</td>
+								<td>
+									' . checkboxrm18e($decodedData['bedah_emergency']) . ' Emergency
+								</td>
+							</tr>
+							<tr>
+								<td width="37%">
+									' . checkboxrm18e($decodedData['bedah_kecil']) . ' Kecil
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">Diagnosis post operatif : ' . $decodedData['diagnosa2'] . '</td>
+					<td>
+						<table cellpadding="4">
+							<tr>
+								<td width="37%">
+									' . checkboxrm18e($decodedData['ya_post']) . ' Ya
+								</td>
+								<td>
+									' . checkboxrm18e($decodedData['tidak_post']) . ' Tidak
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						Jaringan yang di – Eksisi / Insisi : <br>
+						' . $decodedData['jaringan_eksisis'] . '
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						Nama / Macam Operasi<br>
+						' . $decodedData['macam_operasi_eksisi'] . '
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<table cellpadding="2">
+							<tr>
+					<td>
+						Tanggal Operasi : <br>
+						' . $decodedData['tanggal_operasi'] . '
+					</td>
+					<td>
+						Jam Operasi Dimulai : <br>
+						' . $decodedData['jam_operasi_dimulai'] . '
+					</td>
+					<td>
+						Jam Operasi Selesai : <br>
+						' . $decodedData['jam_operasi_selesai'] . '
+					</td>
+					<td>
+						Lama Operasi  Berlangsung :<br>
+						' . $decodedData['lama_operasi_berlangusung'] . '
+					</td>
+				</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+					Laporan<br>
+						<table border="1" cellpadding="3">
+							<tr>
+								<td>' . $decodedData['laporan'] . '<br><br><br><br></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		';
+
+		$QRDokterUmumrm18e = $decodedData["dokter_umum"];
+		$DokterUmumrm18e = $this->to_safe_filename($QRDokterUmumrm18e) . '.jpg';
+		$path_ttd_server_DokterUmumrm18e = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $DokterUmumrm18e;
+		$path_ttd_url_DokterUmumrm18e = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $DokterUmumrm18e;
+
+		// Awal HTML
+		// Cek jika path valid dan file ada
+		$html1 .= '
+		<br>
+		<div align="right">
+				Dokter Penanggung Jawab Pasien, <br>
+		<img src="' . $path_ttd_server_DokterUmumrm18e . '" width="80" height="80" /><br>
+		' . $decodedData['dokter_umum'] . '
+		</div>
+		';
+
+		$pdf->writeHTML($html1, true, false, true, false, '');
+	}
+
+
+	// ============== RM18 E Laporan operasi ====================== //
+	// ============================================================== //
+
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public function _render_pdfrm2($id_kunjungan, $pdf)
@@ -2197,3288 +5362,4 @@ class Data_klaim extends CI_Controller
 	// RM 2 URUTAN 2
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// RM 2A URUTAN 2
-	public function _render_pdfrm2a($id_kunjungan, $pdf)
-	{
-		// Ambil data unit
-		$unit = $this->site_model->get_unit_data();
-		$nama_prov = $unit['nama_prov'];
-		$nama_kab = $unit['nama_kab'];
-		$nama_kec = $unit['nama_kec'];
-		$nama_kel = $unit['nama_kel'];
-		$alamat = $unit['alamat'];
-		$city_sign = $unit['nama_kab'];
-		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-
-		// Ambil data settings
-		$getsettings = $this->site_model->get_settings_data();
-		$site_title = $getsettings['nama'];
-		$telepon = $getsettings['telepon'];
-		$email = $getsettings['email'];
-		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-		// Ambil data FORM RME berdasarkan ID
-		$berkas_klaim = 'rm2a';
-		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
-		if (!$formData) {
-			return;
-		}
-		$link = $formData->nama_berkas;
-		
-		$id_kunjungan = $formData->id_kunjungan;
-		$id_pasien_rme = $formData->id_pasien_rme;
-		$jsonRaw = $formData->data_json;
-		$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-		$idBerkas = $decodedData['id'] ?? null;
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// BATAS AMBIL DATA
-		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-		if ($get_id_konten->num_rows() > 0) {
-			$id_poli = $get_id_konten->row()->id_poly;
-			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
-
-			if ($admission_id_kunjungan == NULL) {
-				// DATA DARI ANTRIAN
-				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-				$tgl_admit2 = date($post->waktu_masuk);
-				$tgl_admit = format_indo(date($post->waktu_masuk));
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$nama_poli = $post->nama_poli;
-				$nama_dokter = $post->nama_dokter;
-				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-				// DATA DARI ANTRIAN
-			} else {
-				// DATA DARI ADMISSION
-				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$tgl_admit2 = $post->tgl_admit;
-				$post->umur = countumur($post->tanggal_lahir);
-				$tgl_admit = format_indo(date($post->tgl_admit));
-				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-				$nama_lantai = $post->nama_lantai;
-				$nama_dokter = $post->nama_dokter;
-				$nama_poli = $post->nama_poli;
-				$nama_ruangan = $post->nama_ruangan;
-				$no_bad = $post->no_bad;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$kelas = $post->kelas;
-				$lama = countme($post->tgl_admit);
-				// DATA DARI ADMISSION
-			}
-		} else {
-			redirect('backend/data_klaim');
-		}
-		// BATAS AMBIL DATA
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		// Simpan data perawat jika user level 13
-		$levelUser = $this->session->all_userdata()['level'];
-		if ($levelUser == 13) {
-			$post->id_perawat = $this->session->all_userdata()['id'];
-			$post->nama_perawat = $this->session->all_userdata()['name'];
-		}
-
-		$postmenu = $this->admission_model->get_menu($link);
-		$judulRM = $postmenu->isi;
-		$namaRM = $postmenu->rm;
-		$linkRM = $postmenu->link;
-		$dokters = $decodedData['dokter_umum'];
-		// $result_dokter = $this->data_klaim_model->get_karyawan_by_nama($dokters);
-
-		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
-		// $imagesttd = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
-		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-		// ... Inisialisasi PDF seperti sebelumnya
-
-		$pdf->AddPage();
-		$pdf->SetFont('times', '', 11);
-
-		// HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($images, 10, 10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times', 'B', 16);
-		$pdf->Cell(190, 4, $site_title, 0, 1, 'C');
-		$pdf->SetFont('times', 'B', 10);
-		$pdf->MultiCell(45, 1, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 1, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
-		$pdf->Cell(10, 2, '', 0, 1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-
-		// FONT UTAMA
-		$pdf->SetFont('times', '', 10);
-
-		// LANJUT DESAIN PDF NYA DISINI>>>
-		$html2 = '
-	    <h3 align="right">' . $namaRM . '</h3>
-
-		 <table cellpadding="5" cellspacing="0" border="1">
-			    <tr>
-			        <td width="12%" style="border:1px solid black; text-align:center;" ><img src="' . $images . '" width="50" height="50" /></td>
-					<td width="48%" style="text-align:center;" colspan="3"><div>Formulir Triage Anak</div><div>' . $site_title . '</div></td>
-					<td width="40%" colspan="3" cellpadding="1">
-						<b><label>Nama Pasien</label> : </b>' . $nama_pasien . '<br>
-						<b><label>Jenis Kelamin</label> :  </b>' . $jenkel . '<br>
-						<b><label>Tanggal Lahir</label> : </b>' . $tgl_lahir . '<br>
-						<b><label>No. RM </label>: </b>' . $no_rm . '<br>
-						<b><label>NIK</label> : </b>' . $nik . '
-					</td>
-				</tr>
-				<tr>
-					<td>Cara Datang</td>
-			';
-
-		$metodePenanganan = $decodedData; // Asumsi data yang dikirim sudah dalam bentuk array (bukan string)
-		$opsiPenangan = [
-			'sendiri',
-			'ambulans',
-			'diantar_polisi',
-		];
-
-		// Membuat array kosong untuk menampung metode penanganan yang terpilih
-		$selectedItems = [];
-
-		foreach ($opsiPenangan as $opsi) {
-			// Periksa apakah metode penanganan ada dalam decoded data dan terpilih (misalnya, "on")
-			if (isset($metodePenanganan[$opsi]) && $metodePenanganan[$opsi] === 'on') {
-				$selectedItems[] = strtolower($opsi); // Menambahkan opsi yang dipilih ke array selectedItems
-			}
-		}
-
-
-		foreach ($opsiPenangan as $opsi) {
-			$checked = in_array(strtolower($opsi), $selectedItems) ? '[v]' : '[ ]';
-			$label = ucwords(str_replace('_', ' ', $opsi));
-			$html2 .= '<td>' . $checked . ' ' . $label . '</td>';
-			// Mencetak opsi dengan tanda centang
-		}
-
-
-		//////////////////////// cols 2 jenis kasus ////////////////// 
-		/////////////////////////////////////////////////////////////
-		function checkbox($value, $label = '')
-		{
-			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
-		}
-
-
-		function valueOrDash($field)
-		{
-			return isset($field) ? $field : '-';
-		}
-
-		$jamDatang = valueOrDash($decodedData['jam_penanganan_dewasa_1'] ?? '');
-		$jamDoa = valueOrDash($decodedData['jam_doa_dewasa_1'] ?? '');
-		$triageSekunder = valueOrDash($decodedData['trage_sekunder_dewasa_1'] ?? '');
-
-		$nonTrauma = valueOrDash($decodedData['jenis_kasus_dewasa_non_trauma_1'] ?? '');
-		$trauma = valueOrDash($decodedData['jenis_kasus_dewasa_trauma_1'] ?? '');
-		$kll = valueOrDash($decodedData['jenis_kasus_dewasa_kll_1'] ?? '');
-		$kasusLain = valueOrDash($decodedData['jenis_kasus_dewasa_lain_lain_1'] ?? '');
-
-
-		$html2 .= '
-				<td rowspan="2" colspan="2"><b>Jam Datang</b> ' . $jamDatang . '</td>
-				<td>
-					<div>' . checkbox($decodedData['metode_penanganan_doa_1'] ?? null, 'Doa') . '<br>
-					' . $jamDoa . '</div>
-				</td>
-			</tr>
-			<tr>
-				<td>Jenis Kasus</td>
-				<td>
-					<span>' . checkbox($decodedData['jenis_kasus_dewasa_1'] ?? null) . $nonTrauma . ' Non Trauma</span><br>
-					<span>' . checkbox($decodedData['jenis_kasus_dewasa_2'] ?? null) . $trauma . ' Trauma</span>
-				</td>
-				<td><div>' . checkbox($decodedData['jenis_kasus_dewasa_3'] ?? null) . $kll . ' KLL</div></td>
-				<td><div>' . checkbox($decodedData['jenis_kasus_dewasa_4'] ?? null) . $kasusLain . ' Lain-lain</div></td>
-				<td>Triage Sekunder ' . $triageSekunder . '</td>
-			</tr>
-			<tr>
-				<td>Pemeriksaan</td>
-				<td>Kategori I</td>
-				<td>Kategori II</td>
-				<td>Kategori III</td>
-				<td>Kategori IV</td>
-				<td>Kategori V</td>
-				<td>Tanda Vital</td>
-			</tr>
-			';
-		// divider ///////////////////////////////
-
-
-		//////////////// cols 3 jalan nafas ////////////////
-		///////////////////////////////////////////////////
-		$keadaanUmum = valueOrDash($decodedData['keadaan_umum'] ?? '');
-
-
-		$html2 .= '<tr>
-				<td>Jalan Nafas</td>
-				<td>
-					<div>' . checkbox($decodedData['sumbatan_total'] ?? null)  . ' Sumbatan Total <br>
-					' . checkbox($decodedData['sumbatan_sebagian_distress_berat'] ?? null)  . ' Sumbatan sebagian disertai distress pernafasan berat</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['bebas'] ?? null) . ' Bebas <br>
-					' . checkbox($decodedData['sumbatan_sebagian_distress_sedang'] ?? null) . 'Sumbatan sebagian disertai distress pernafasan sedang</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['bebas_3'] ?? null) . ' Bebas <br>
-					' . checkbox($decodedData['sumbatan_sebagian_distress_ringan'] ?? null) .  'Sumbatan sebagian disertai distress pernafasan Ringan</div>
-				</td>
-				<td>' . checkbox($decodedData['bebas4'] ?? null) . ' Bebas </td>
-				<td>' . checkbox($decodedData['bebas_5'] ?? null) .  ' Bebas </td>
-				<td><span style="text-align:center;">Keadaan Umum</span> <br> ' . $keadaanUmum . '</td>
-		</tr>
-		
-		
-		';
-		// divider ////////////////////////////
-
-
-		//////////////////// cols 4 pernapasan ///////////////////////
-		//////////////////////////////////////////////////////////////
-		$SuhuJalanNafas = valueOrDash($decodedData['suhu'] ?? '');
-		$SaO2JalanNafas = valueOrDash($decodedData['sa02'] ?? '');
-		$FrekuensiJalanNafas = valueOrDash($decodedData['frekuensi'] ?? '');
-		$NadiJalanNafas = valueOrDash($decodedData['nadi'] ?? '');
-
-
-		$html2 .= '
-			<tr>
-				<td>Pernapasan</td>
-				<td>
-					<div>' . checkbox($decodedData['nafas_spontan_minus'] ?? null) . ' Nafas spontan (-) <br>
-					' . checkbox($decodedData['hipoventilasi'] ?? null) .  'hipoventilasi<br>
-					' . checkbox($decodedData['distress_pernafasan_berat'] ?? null) .  'Distress pernafasan berat (otot diafragma berat, retraksi berat, sianosis akut)</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['nafas_spontan_plus_1'] ?? null) . 'Nafas spontan (+) <br>
-					' . checkbox($decodedData['distress_pernafasan_sedang_1'] ?? null) . 'Distress pernafasan sedang (otot diafragma sedang, retraksi sedang, kulit pucat)</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['nafas_spontan_plus_2'] ?? null) . 'Nafas spontan (+) <br>
-					' . checkbox($decodedData['distress_pernafasan_ringan_2'] ?? null) . 'Distress pernafasan ringan (otot diafragma ringan, retraksi ringan, kulit kemerahan)</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['nafas_spontan_plus_3'] ?? null) . 'Nafas spontan (+) <br>
-					' . checkbox($decodedData['tidak_ada_distress_pernafasan_3'] ?? null) . 'Tidak ada distress pernafasan (otot diafragma normal, retraksi tidak ada)</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['nafas_spontan_plus_4'] ?? null) . 'Nafas spontan (+) <br>
-					' . checkbox($decodedData['tidak_ada_distress_pernafasan_4'] ?? null) . 'Tidak ada distress pernafasan (retraksi tidak ada, otot diafragma normal)</div>
-				</td>
-				<td>
-					<div>
-						<span style="text-align:center;">Suhu  ' . $SuhuJalanNafas . '<sup>o</sup>C </span><br> 
-						<span style="text-align:center;">SaO2  ' . $SaO2JalanNafas . ' %</span><br> 
-						<span style="text-align:center;">Frekuensi  ' . $FrekuensiJalanNafas . '</span> <br> 
-						<span style="text-align:center;">Nadi ' . $NadiJalanNafas . 'x/mnt</span>  <br> 
-					</div>
-				</td>
-		</tr>
-		';
-		//////////////////////// divider /////////////////////////////
-		/////////////////////////////////////////////////////////////
-
-
-		/////////////////////// cols 5 sirkulasi ////////////////////
-		/////////////////////////////////////////////////////////////
-		$SirkulasiNafas = valueOrDash($decodedData['nafas_k'] ?? '');
-		$SirkulasiTD = valueOrDash($decodedData['td_k'] ?? '');
-		$SirkulasiRiwayat = valueOrDash($decodedData['riwayat_'] ?? '');
-
-		$html2 .= '
-			<tr>
-			<td>Sirkulasi</td>
-			<td>
-				<div>' . checkbox($decodedData['absen_sirkulasi_1'] ?? null) . 'Absen sirkulasi<br>
-				' . checkbox($decodedData['signifikan_bradikardia_1'] ?? null) . 'Signifikan bradikardia Ch. 60 pada bayi<br>
-				' . checkbox($decodedData['gangguan_hemodinamik_berat_1'] ?? null) . 'Gangguan hemodinamik berat<br>
-				' . checkbox($decodedData['nadi_perifer_minus_1'] ?? null) . 'Nadi perifer (-)<br>
-				' . checkbox($decodedData['kulit_pucat_akral_dingin_1'] ?? null) . 'Kulit pucat, akral dingin, bintik-bintik merah pada ekstremitas<br>
-				' . checkbox($decodedData['takikardia_berat_1'] ?? null) . 'Takikardia berat<br>
-				' . checkbox($decodedData['pengisian_kapiler_1'] ?? null) . 'Pengisian kapiler>4 detik perdarahan tidak terkontrol<br>
-				</div>
-			</td>
-			<td>
-				<div>' . checkbox($decodedData['sirkulasi_sirkulasi_2'] ?? null) . 'Sirkulasi (+)<br>
-				' . checkbox($decodedData['gangguan_hemodinamik_sedang_2'] ?? null) . 'Gangguan hemodinamik sedang<br>
-				' . checkbox($decodedData['nadi_sirkulasi_lemah_2'] ?? null) . 'Nadi brachii lemah<br>
-				' . checkbox($decodedData['kulit_pucat_sirkulasi_dingin_2'] ?? null) . 'Kulit pucat, akral dingin<br>
-				' . checkbox($decodedData['takikardia_sedang_2'] ?? null) . 'Takikardia sedang<br>
-				' . checkbox($decodedData['pengisian_kapiler_sedang_2'] ?? null) . 'Pengisian kapiler 2-4 detik<br>
-				' . checkbox($decodedData['tanda_dehidrasi_6_2'] ?? null) . '>6 tanda dehidrasi<br>
-				</div>
-			</td>
-			<td>
-				<div>' . checkbox($decodedData['sirkulasi_plus_3'] ?? null) . 'Sirkulasi (+)<br>
-				' . checkbox($decodedData['gangguan_ringan_3'] ?? null) . 'Gangguan hemodinamik ringan<br>
-				' . checkbox($decodedData['nadi_teraba_3'] ?? null) . 'Nadi perifer teraba<br>
-				' . checkbox($decodedData['kulit_pucat_hangat_3'] ?? null) . 'Kulit pucat, akral hangat<br>
-				' . checkbox($decodedData['takikardia_ringan_3'] ?? null) . 'Takikardia ringan<br>
-				' . checkbox($decodedData['tanda_dehidrasi_3_6'] ?? null) . '3-6 tanda dehidras<br>
-				</div>
-			</td>
-			<td>
-				<div>' . checkbox($decodedData['sirkulasi_plus_4_1'] ?? null) . 'Sirkulasi (+)<br>
-				' . checkbox($decodedData['gangguan_hemodinamik_4_1'] ?? null) . 'Gangguan hemodinamik (-)<br>
-				' . checkbox($decodedData['nadi_perifer_4_1'] ?? null) . 'Nadi perifer teraba<br>
-				' . checkbox($decodedData['kulit_kemerahan_akral_4_1'] ?? null) . 'Kulit pucat, akral hangat<br>
-				' . checkbox($decodedData['tanda_dehidrasi_4_1'] ?? null) . 'Takikardia ringan<br>
-				</div>
-			</td>
-			<td>
-				<div>' . checkbox($decodedData['sirkulasi_sirkulasi_10_1'] ?? null) . 'Sirkulasi (+)<br>
-				' . checkbox($decodedData['gangguan_hemodinamik_10_1'] ?? null) . 'Gangguan hemodinamik (-)<br>
-				' . checkbox($decodedData['nadi_perifer_teraba_10_1'] ?? null) . 'Nadi perifer teraba<br>
-				' . checkbox($decodedData['kulit_sirkulasi_10_1'] ?? null) . 'Kulit kemerahan, akral hangat<br>
-				' . checkbox($decodedData['tanda_dehidrasi_10_1'] ?? null) . 'Tanda dehidrasi (-)<br>
-				</div>
-			</td>
-
-			<td>
-				<div>
-					<span>Suhu  ' . $SirkulasiNafas . '<sup>o</sup>C </span><br> 
-					<span>SaO2  ' . $SirkulasiTD . ' %</span><br> 
-					<span>Nadi ' . $SirkulasiRiwayat . 'x/mnt</span>  <br> 
-				</div>
-			</td>
-		</tr>
-		';
-		//////////////////////// divider /////////////////////////////
-		/////////////////////////////////////////////////////////////
-
-
-		///////// divider final ///////////
-		$html2 .= '</table>';
-		///////// divider final ///////////
-		$pdf->writeHTML($html2, true, false, true, false, '');
-
-		// LANJUT DESAIN PDF NYA DISINI>>>
-
-
-
-
-		// ===================== HALAMAN DUA ======================== //
-		$pdf->AddPage();
-
-		// $pdf->SetFont('times', 'B', 16);
-		// $pdf->Cell(190, 4, $site_title, 0, 1, 'C');
-		// $pdf->SetFont('times', 'B', 10);
-		// $pdf->MultiCell(45, 1, '', 0, 'C', 0, 0, '', '', true);
-		// $pdf->MultiCell(100, 1, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
-		// $pdf->Cell(10, 2, '', 0, 1);
-		// $pdf->writeHTML("<hr>", true, false, false, false, '');
-
-		// FONT UTAMA
-		$pdf->SetFont('times', '', 10);
-		// ========================================================= //
-
-		// ==================== DESAIN ============================== //
-		// ========================================================== //
-
-		/////////////////////// cols 6 Tanda Lain ////////////////////
-		/////////////////////////////////////////////////////////////
-
-		$html3 .= '
-		<table cellpadding="5" cellspacing="0" border="1">
-			<tr>
-				<td>Kesadaran</td>
-				<td><div>' . checkbox($decodedData['gcs'] ?? null) . 'GCS 9</div></td>
-				<td><div>' . checkbox($decodedData['gcs12'] ?? null) . 'GCS 9-12</div></td>
-				<td><div>' . checkbox($decodedData['gcs13'] ?? null) . 'GCS >13</div></td>
-				<td><div>' . checkbox($decodedData['gcs14'] ?? null) . 'GCS 15</div></td>
-				<td><div>' . checkbox($decodedData['gcs15'] ?? null) . 'GCS 15</div></td>
-				<td><div>' . checkbox($decodedData['gcmakan'] ?? null) . 'Makanan</div></td>
-			</tr>
-			<tr>
-				<td>Tanda Lain</td>
-				<td><div>' . checkbox($decodedData['kejang_sedang'] ?? null) . 'Kejang sedang berlangsung respon nyeri (+) Trauma kepala berat</div></td>
-				<td><div>' . checkbox($decodedData['kondisi2'] ?? null) . 'Gelisah Irritable Demam dengan tanda-tanda kejang sakit kepala kaku leher Bayi usia lebih kecil dari 28 hari</div></td>
-				<td>
-					<div>' . checkbox($decodedData['kondisi3'] ?? null) . 'Apatis<br>
-					' . checkbox($decodedData['somnolen'] ?? null) . 'Somnolen Nyeri perut hebat Fraktur ekstremitas Laserasi kulit Luka kotor<br>
-					</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['kondisi4'] ?? null) . 'Cedera tanpa penurunan kesadaran Nyeri abdomen tidak hebat Nyeri sedang Dislokasi sendi Inflamasi / benda asing pada mata Infeksi paru demam subfebris<br>
-					</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['kondisi5'] ?? null) . 'Gejala klinis (-) Rencana imunisasi Nyeri telinga tidak demam Sakit dengan gejala ringan Lebam post trauma ringan<br>
-					</div>
-				</td>
-				<td>
-					<div>' . checkbox($decodedData['obat_lainnya'] ?? null) . 'Obat<br>
-					' . checkbox($decodedData['obat_lain_lain'] ?? null) . 'Lain-lain<br>
-					' . checkbox($decodedData['obat_gcs_lainnya'] ?? null) . 'Gcs<br>
-					</div>
-				</td>
-			</tr>
-		';
-
-		/////////////////////// cols 7 Respon Time ////////////////////
-		/// ///////////////////////////////////////////////////////////
-		$TanggalCity = valueOrDash($decodedData['tanggal_2'] ?? '');
-
-		$html3 .= '
-    <tr>
-        <td>Respon Time</td>
-        <td>' . checkbox($decodedData['immediate'] ?? null) . 'Immediate</td>
-        <td>' . checkbox($decodedData['10menit_under'] ?? null) . '10 menit</td>
-        <td>' . checkbox($decodedData['30menit_under'] ?? null) . '30 menit</td>
-        <td>' . checkbox($decodedData['60menit_under'] ?? null) . '60 menit</td>
-        <td>' . checkbox($decodedData['120menit_under'] ?? null) . '120 menit</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Obserbasi</td>
-        <td>R.Resusitasi</td>
-        <td>R.Resusitasi/R.Obserbasi</td>
-        <td>R.Obserbasi</td>
-        <td>R.Obserbasi</td>
-        <td>R.Obserbasi</td>
-        <td>Tanggal ' . date('d / m / Y', strtotime($TanggalCity)) . '</td>
-    </tr>
-    <tr>
-        <td colspan="6" style="height: 50px;">' . checkbox($decodedData['emergency3'] ?? null) . 'Emergency</td>
-        <td rowspan="2">';
-
-		// =================== TTD MASUKKAN KE DALAM  ===================
-		// =================== TTD MASUKKAN KE DALAM =================== //
-			$perawat_pengkaji = $decodedData['perawat_pengkaji'];
-	        $safe_filename_triage = $this->to_safe_filename($perawat_pengkaji) . '.jpg';
-			$path_ttd_server_triage = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_triage;
-			$path_ttd_url_triage = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_triage;
-
-			$html3 .= '<span align="center">Petugas Triage, </span><br/>';
-			if (file_exists($path_ttd_server_triage)) {
-			    $html3 .= '<div align="center">
-			                   <img src="' . $path_ttd_url_triage . '" width="60" height="60" />
-			               </div>';
-			}
-			// Nama dokter tetap ditampilkan
-			$html3 .= '<br/>' . $decodedData['perawat_pengkaji'] . '<br/>';
-		// =================== TTD MASUKKAN KE DALAM =================== //
-
-		// if (!empty($decodedData['image_drawer']['state_image_1'])) {
-		// 	$imgJson = $decodedData['image_drawer']['state_image_1'];
-		// 	$imgData = json_decode($imgJson, true);
-
-		// 	if (!empty($imgData['markers'][0]['drawingImgUrl'])) {
-		// 		$src = $imgData['markers'][0]['drawingImgUrl'];
-
-		// 		if (strpos($src, 'data:image') === 0) {
-		// 			// Tambahkan gambar ke dalam <td>
-		// 			$html3 .= '<br><img src="' . $src . '" style="width:60px; height:auto;">';
-		// 		}
-		// 	}
-		// }
-
-
-		$html3 .= '
-			</td>
-		</tr>
-			<tr>
-				<td colspan="6" style="height: 50px;">' . checkbox($decodedData['false_emergency3'] ?? null) . 'False Emergency</td>
-			</tr>
-		';
-
-
-		////////////////// final divider ///////////////////
-		$html3 .= '
-			</table>
-		';
-		////////////////// final divider ///////////////////
-
-
-		$pdf->writeHTML($html3, true, false, true, false, '');
-	}
-	// RM 2A URUTAN 2
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		// ============== rm2b triase ========================= //
-	// ============================================================== //
-
-	public function _render_pdfrm2b($id_kunjungan, $pdf)
-	{
-		// Ambil data unit
-		$unit = $this->site_model->get_unit_data();
-		$nama_prov = $unit['nama_prov'];
-		$nama_kab = $unit['nama_kab'];
-		$nama_kec = $unit['nama_kec'];
-		$nama_kel = $unit['nama_kel'];
-		$alamat = $unit['alamat'];
-		$city_sign = $unit['nama_kab'];
-		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-		// Ambil data settings
-		$getsettings = $this->site_model->get_settings_data();
-		$site_title = $getsettings['nama'];
-		$telepon = $getsettings['telepon'];
-		$email = $getsettings['email'];
-		$imagesrm2b = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-		// Ambil data FORM RME berdasarkan ID
-		$berkas_klaim = 'rm2b';
-		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
-		if (!$formData) {
-			return;
-		}
-		$link = $formData->nama_berkas;
-		$jsonRaw = $formData->data_json;
-		$id_kunjungan = $formData->id_kunjungan;
-		$id_pasien_rme = $formData->id_pasien_rme;
-		$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-		$idBerkas = $decodedData['id'] ?? null;
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// BATAS AMBIL DATA
-		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-		if ($get_id_konten->num_rows() > 0) {
-			$id_poli = $get_id_konten->row()->id_poly;
-			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
-
-			if ($admission_id_kunjungan == NULL) {
-				// DATA DARI ANTRIAN
-				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-				$tgl_admit2 = date($post->waktu_masuk);
-				$tgl_admit = format_indo(date($post->waktu_masuk));
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$nama_poli = $post->nama_poli;
-				$nama_dokter = $post->nama_dokter;
-				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-				// DATA DARI ANTRIAN
-			} else {
-				// DATA DARI ADMISSION
-				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-				// $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-				$nama_pasien = $post->nama_pasien;
-				$no_bpjs = $post->no_bpjs;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$tgl_admit2 = $post->tgl_admit;
-				$post->umur = countumur($post->tanggal_lahir);
-				$tgl_admit = format_indo(date($post->tgl_admit));
-				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-				$nama_lantai = $post->nama_lantai;
-				$nama_dokter = $post->nama_dokter;
-				$nama_poli = $post->nama_poli;
-				$nama_ruangan = $post->nama_ruangan;
-				$no_bad = $post->no_bad;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$kelas = $post->kelas;
-				$nama_hub_pasien = $post->nama_hub_pasien;
-				$alamat_hub_pasien = $post->alamat_hub_pasien;
-				$noHp_hub_pasien = $post->noHp_hub_pasien;
-				$nama_bangsa = $post->nama_bangsa;
-				$hubungan_keluarga_pasien = $post->hubungan_keluarga_pasien;
-				$status_nikah = $post->status_nikah;
-				$nama_suku = $post->nama_suku;
-				$lama = countme($post->tgl_admit);
-				// DATA DARI ADMISSION
-			}
-		} else {
-			redirect('backend/data_klaim');
-		}
-		// BATAS AMBIL DATA
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-		// Simpan data perawat jika user level 13
-		$levelUser = $this->session->all_userdata()['level'];
-		if ($levelUser == 13) {
-			$post->id_perawat = $this->session->all_userdata()['id'];
-			$post->nama_perawat = $this->session->all_userdata()['name'];
-		}
-
-		$postmenu = $this->admission_model->get_menu($link);
-		$judulRM = $postmenu->isi;
-		$namaRM = $postmenu->rm;
-		$linkRM = $postmenu->link;
-
-
-		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
-		// $imagesttdrm025 = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
-
-		// ... Inisialisasi PDF seperti sebelumnya
-
-		$pdf->AddPage();
-		$pdf->SetFont('times', '', 11);
-
-		// HEADER PDF
-		// Matikan GAMBAR HEADER
-		// $pdf->Image($imagesrm2b, 10, 10, 20, 20, '', '', 1, 0);
-		// $pdf->SetFont('times', 'B', 16);
-		// $pdf->Cell(190, 4, $site_title, 0, 1, 'C');
-		// $pdf->SetFont('times', 'B', 10);
-		// $pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		// $pdf->MultiCell(100, 5, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
-		// $pdf->Cell(10, 4, '', 0, 1);
-		// $pdf->writeHTML("<hr>", true, false, false, false, '');
-
-		// FONT UTAMA
-		$pdf->SetFont('times', '', 11);
-
-
-
-		// =================== HALAMAN PERTAMA ====================
-		function checkboxrm2b($value, $label = '')
-		{
-			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
-		}
-
-		function radiomarkrm2b($value, $expectedValue, $label)
-		{
-			return ($value === $expectedValue) ? '[v] ' . $label : '[ ] ' . $label;
-		}
-
-		function valueOrDashrm2b($field)
-		{
-			return isset($field) ? htmlspecialchars($field) : '-';
-		}
-
-		$html1 = '
-		<h3 align="right">' . htmlspecialchars($namaRM) . '</h3>
-		
-		<table border="1" style="border-collapse:collapse;">
-			<tr>
-				<td width="50%">
-					<table style="border-collapse:collapse;">
-						<tr>
-							<td width="30%">
-							<br>
-								<div><img src="' . $imagesrm2b . '" width="180" height="180"/></div>
-							</td>
-							<td width="70%">
-								' . $site_title  . '<br>
-								' . $lokasi . ' <br>
-								' . $telepon . ' <br>
-							</td>
-						</tr>
-					</table>
-				</td>
-				<td width="15%" align="center">
-					<br><br><br><br>FORMULIR TRIAGE
-				</td>
-				<td width="35%">
-				<br><br><br>
-					<table style="border-collapse:collapse;" >
-						<tr>
-							<td width="40%">Nama</td>
-							<td width="70%">
-								' . $nama_pasien . '
-							</td>
-						</tr>
-						<tr>
-							<td width="40%">Tanggal lahir</td>
-							<td width="70%">
-								' . $tgl_lahir . '
-							</td>
-						</tr>
-						<tr>
-							<td width="40%">Jenis Kelamin</td>
-							<td width="70%">
-								' . $jenkel . '
-							</td>
-						</tr>
-						<tr>
-							<td width="40%">No Rm</td>
-							<td width="70%">
-								' . $no_rm . '
-							</td>
-						</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-
-		<table style="border-collapse:collapse" border="1">
-			<tr>
-				<td width="10%">Cara Datang</td>
-				<td width="15%">' . checkboxrm2b($decodedData['sendiri']) . ' Sendiri</td>
-				<td width="15%">' . checkboxrm2b($decodedData['ambulans']) . ' Ambulans</td>
-				<td width="15%">' . checkboxrm2b($decodedData['diantar_polisi']) . ' Diantar Polisi</td>
-				<td  width="30%" colspan="2" rowspan="2">
-					Jam Penanganan 
-					' . $decodedData['jam_penanganan_dewasa_1'] . '
-				</td>
-				<td width="15%" >
-					' . checkboxrm2b($decodedData['metode_penanganan_doa_1']) . ' Doa <br>
-					' . $decodedData['jam_doa_dewasa_1'] . '
-				</td>
-			</tr>
-
-			<tr>
-				<td>Jenis Kasus</td>
-				<td>' . checkboxrm2b($decodedData['jenis_kasus_dewasa_1']) . ' Non Trauma <br>
-				' . checkboxrm2b($decodedData['jenis_kasus_dewasa_2']) . 'Trauma 
-				</td>
-				<td>' . checkboxrm2b($decodedData['jenis_kasus_dewasa_3']) . 'KLL </td>
-				<td>' . checkboxrm2b($decodedData['jenis_kasus_dewasa_4']) . 'lain-lain </td>
-				<td>Triage Sekunder <br> ' . checkboxrm2b($decodedData['trage_sekunder_dewasa_1']) . '</td>
-			</tr>
-		
-			<tr>
-				<td>Pemeriksaan</td>
-				<td>Kategori I</td>
-				<td>Kategori II</td>
-				<td>Kategori III</td>
-				<td>Kategori IV</td>
-				<td>Kategori V</td>
-				<td colspan="2">Tanda Vital</td>
-			</tr>
-
-			<tr>
-				<td>Jalan Nafas</td>
-				<td>
-					' . checkboxrm2b($decodedData['sumbatan_total']) . 'Sumbatan total <br>
-				
-					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_berat']) . 'Sumbatan sebagian dengan distress berat 
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['bebas']) . ' Bebas<br>
-				
-					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_sedang']) . 'Sumbatan sebagian dengan distress sedang 
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['bebas_3']) . ' Bebas<br>
-				
-					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_ringan']) . ' Sumbatan sebagian dengan distress ringan
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['bebas4']) . ' Bebas<br>
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['bebas_5']) . ' Bebas<br>
-				</td>
-				<td>Keadaan Umum <br> ' . $decodedData['keadaan_umum'] . '</td>
-
-			</tr>
-			<tr>
-				<td>Pernapasan</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['nafas_spotan_henti']) . 'Sumbatan total <br>
-				
-					' . checkboxrm2b($decodedData['sumbatan_sebagian_distress_berat']) . 'Berhenti nafas spontan / Hipoventilasi <br> 
-
-					' . checkboxrm2b($decodedData['distres_abdominal']) . 'Distress pernafasan berat pernafasan abdominal, retraksi dada berat (+), sianosisa akut <br>
-
-					' . checkboxrm2b($decodedData['tidak_mampu_bicara']) . 'Tidak mampu berbicara <br> 
-
-					' . checkboxrm2b($decodedData['frekuensi_nafas_kecil_10menit']) . 'Frekuensi nafas lebih kecil 10 x/menit <br> 
-
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['nafas_spontan_plus_1']) . 'Nafas spontan (+) <br>
-				
-					' . checkboxrm2b($decodedData['distress_pernafasan_moderate_1']) . 'Distress pernafasan moderate (pernafasan abdominal, retraksi dada sedang (+), kulit pucat) <br> 
-
-					' . checkboxrm2b($decodedData['bicara_hanya_satu_kata_1']) . 'Bicara hanya satu kata <br>
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['nafas_spontan_plus_2']) . 'Nafas spontan (+) <br>
-				
-					' . checkboxrm2b($decodedData['distres_pernapasan_moderate_2']) . 'Distress pernafasan moderate (pernafasan abdominal, bicara pendek-pendek (+), kulit kemerahan)
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['nafas_spontan_plus_3']) . 'Nafas spontan (+) <br>
-				
-					' . checkboxrm2b($decodedData['distres_penapasan_mines_1']) . 'Nafas spontan (-) <br> 
-
-					' . checkboxrm2b($decodedData['dapat_berkomunikasi_baik_1']) . 'Dapat berkomunikasi baik (kalimat penuh) <br>
-				</td>
-				<td>
-					' . checkboxrm2b($decodedData['nafas_spontan_plus_4']) . 'Nafas spontan (+) <br>
-				
-					' . checkboxrm2b($decodedData['distres_penapasan_mines_2']) . 'Nafas spontan (-) <br> 
-
-					' . checkboxrm2b($decodedData['dapat_berkomunikasi_baik_2']) . 'Dapat berkomunikasi baik (kalimat penuh) <br>
-				</td>
-				<td>
-					Suhu &nbsp;' . $decodedData['suhu'] . ' &nbsp; °C <br>
-					SpO2 &nbsp;' . $decodedData['sa02'] . ' &nbsp; % <br>
-					Nadi &nbsp;' . $decodedData['nadi'] . ' &nbsp; x/menit 
-				</td>
-			</tr>
-
-			<tr>
-				<td>Sirkulasi</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['henti_jantung_1']) . 'Henti jantung <br>
-				
-					' . checkboxrm2b($decodedData['tidak_mampu_bicara_1']) . 'Tidak mampu berbicara <br> 
-
-					' . checkboxrm2b($decodedData['gangguan_hemodinamik_berat_1']) . 'Gangguan hemo dinamik berat (akral dingin, pucat, kebiruan, perfusi buruk) <br>
-
-					' . checkboxrm2b($decodedData['nadi_perifer_minus_1']) . 'Nadi perifer (-) <br> 
-
-					' . checkboxrm2b($decodedData['perdarahan_tdk_terkontrol_1']) . 'Perdarahan berat tidak terkontrol <br> 
-				</td>
-
-
-				<td>
-					' . checkboxrm2b($decodedData['nadi_teraba_1']) . 'Nadi teraba <br>
-				
-					' . checkboxrm2b($decodedData['gangguan_hemodinamik_sedang_2']) . 'Tidak mampu berbicara <br> 
-
-					' . checkboxrm2b($decodedData['gangguan_hemodinamik_berat_1']) . 'Gangguan hemo dinamik sedang (akral dingin, pucat, kulit basah) <br>
-
-					' . checkboxrm2b($decodedData['takikardi_moderate_1']) . 'Takikardi moderate <br> 
-
-					' . checkboxrm2b($decodedData['kehilangan_darah_1']) . 'Kehilangan banyak darah <br> 
-
-					' . checkboxrm2b($decodedData['tanda_dehidrasi_plus_1']) . ' Tandadehidrasi berat (+) <br> 
-
-					' . checkboxrm2b($decodedData['pengisian_kapiler_sedang_2']) . ' Pengisian kapiler 2-4 detik <br> 
-				</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['sirkulasi_plus_3']) . 'Sirkulasi (+)<br>
-				
-					' . checkboxrm2b($decodedData['gangguan_ringan_3']) . 'Gangguan hemo dinamik ringan (denyut nadi perifer teraba, kulit pucat, akral hangat) <br> 
-
-					' . checkboxrm2b($decodedData['takikardi_ringan_1']) . 'Takikardi ringan <br>
-
-					' . checkboxrm2b($decodedData['tanda_dehidrasi_sedang_1']) . 'Tandadehidrasi sedang (+) <br> 
-				</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['nadi_teraba_plus_4_1']) . 'Nadi teraba <br>
-				
-					' . checkboxrm2b($decodedData['gangguan_hemodinamik_4_1']) . 'Gangguan hemodinamik (-) <br> 
-
-					' . checkboxrm2b($decodedData['tanpa_dinamik_4_1']) . 'Gangguan hemo dinamik sedang (akral dingin, pucat, kulit basah) <br>
-
-					' . checkboxrm2b($decodedData['takikardi_moderate_1']) . 'Tanpa gangguan hemo dinamik <br> 
-
-					' . checkboxrm2b($decodedData['denyut_nadi_hangat_4_1']) . 'Denyut nadi perifer teraba <br> 
-
-					' . checkboxrm2b($decodedData['kulit_pucat_4_1']) . ' Kulit pucat kemerahan, akral hangat <br> 
-				</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['nadi_teraba_5_1']) . 'Nadi teraba<br>
-				
-					' . checkboxrm2b($decodedData['tanpa_gangguan_5_2']) . 'Tanpa gangguan hemo dinamik<br> 
-
-					' . checkboxrm2b($decodedData['denyut_nadi_5_3']) . 'Denyut nadi perifer teraba<br>
-
-					' . checkboxrm2b($decodedData['kulit_kemerahan_akral_hangat_5_4']) . 'Kulit kemerahan, akral hangat<br> 
-				</td>
-
-				<td>
-					Frekuensi Nafas &nbsp; ' . $decodedData['nafas_k'] . '&nbsp; x/menit <br>
-
-					Tinggi Darah &nbsp; ' . $decodedData['td_K'] . '&nbsp; mmHg <br>
-
-					Riwayat Alergi &nbsp; ' . $decodedData['riwayat_'] . '  <br>					
-				</td>
-			</tr>
-
-			<tr>
-				<td>Kesadaran</td>
-				<td>' . checkboxrm2b($decodedData['gcs']) . 'GCS</td>
-				<td>' . checkboxrm2b($decodedData['gcs12']) . 'GCS 9-12</td>
-				<td>' . checkboxrm2b($decodedData['gcs13']) . 'GCS  13</td>
-				<td>' . checkboxrm2b($decodedData['gcs14']) . 'GCS 14</td>
-				<td>' . checkboxrm2b($decodedData['gcs_15']) . 'GCS 15</td>
-				<td>' . checkboxrm2b($decodedData['riwayat_alergi_dewasa']) . 'Riwayat Alergi</td>
-			</tr>
-
-			<tr>
-				<td>Tanda Lain</td>
-				<td></td>
-				<td>
-				
-					' . checkboxrm2b($decodedData['tanda_lain_penurunan_aktivitas']) . 'Penurunan aktivitas berat (kontak mata (-), tegangan otot menurun)<br>
-				
-					' . checkboxrm2b($decodedData['tanda_lain_kontak_mata']) . '
-					Kontak mata (-) Nyeri hebat Mengerang kesakitan
-					Gangguan neurovascular berat (nadi sukar diraba, akral dingin, sensasi rasa (-), pergerakan (-), pengisian kapiler)<br> 
-				
-				</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['tanda_lain_nyeri_sedang']) . 'Nyeri sedang – berat (pasien dapat menunjukkan letak nyeri, kulit tampak pucat, memohon-analgesia)<br>
-
-					' . checkboxrm2b($decodedData['tanda_lain_kontak_mata_dipanggil']) . 'Kontak mata saat dipanggil / terganggu<br> 
-
-					' . checkboxrm2b($decodedData['tanda_lain_gangguan_neorovaskular']) . 'Gangguan neorovaskular sedang, nadi teraba, akral dingin, sensasi rasa (+), pergerakan (+), pengisian kapiler <br> 
-				</td>
-
-
-				<td>
-					' . checkboxrm2b($decodedData['tanda_lain_nyeri_pasien']) . 'Nyeri sedang (pasien sadar, kulit hangat kemerahan, meminta analgesia)<br>
-
-					' . checkboxrm2b($decodedData['tanda_lain_tenang_kontak_mata']) . 'Tenang, ada kontak mata<br> 
-
-					' . checkboxrm2b($decodedData['tanda_lain_neurovascular_ringan']) . 'Gangguan neurovascular ringan (nadi teraba, akral hangat, sensasi rasa (+), pergerakan (+), pengisian kapiler (normal))<br> 
-				</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['tanda_lain_gejala_imunisasi']) . 'Gejala klinis (-) Rencana imunisasi
-					Nyeri telinga tidak demam
-					Sakit dengan gejala ringan
-					Lebam post trauma ringan<br>
-
-				</td>
-
-				<td>
-					' . checkboxrm2b($decodedData['obat_lainnya']) . 'Obat<br>
-
-					' . checkboxrm2b($decodedData['obat_lain_lain']) . 'Lain-lain<br> 
-
-					' . checkboxrm2b($decodedData['obat_gcs_lainnya']) . 'Gcs<br> 
-				</td>
-			</tr>
-
-			<tr>
-				<td>Respon Time</td>
-				<td>' . checkboxrm2b($decodedData['immediate']) . ' Immediate</td>
-				<td>' . checkboxrm2b($decodedData['10menit_under']) . ' 10 menit</td>
-				<td>' . checkboxrm2b($decodedData['30menit_under']) . ' 30 menit</td>
-				<td>' . checkboxrm2b($decodedData['60menit_under']) . ' 60 menit</td>
-				<td>' . checkboxrm2b($decodedData['120menit_under']) . ' 120 menit</td>
-				<td></td>
-			</tr>
-
-			<tr>
-				<td>Obserbasi</td>
-				<td>R.Resusitasi</td>
-				<td>R.Resusitasi/R.Obserbasi</td>
-				<td>R.Obserbasi</td>
-				<td>R.Obserbasi</td>
-				<td>R.Obserbasi</td>
-				<td>Tanggal <br>' . $decodedData['tanggal_2'] . '</td>
-			</tr>
-
-			<tr>
-				<td colspan="5">
-					' . checkboxrm2b($decodedData['emergency3']) . 'Emergency
-				</td>
-				<td rowspan="2" colspan="2">
-					Petugas Operator<br>
-					';
-
-		$QRperawatTriase = $decodedData["perawat_pengkaji"];
-		$perawatTriase = $this->to_safe_filename($QRperawatTriase) . '.jpg';
-		$path_ttd_server_perawatTriase = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $perawatTriase;
-		$path_ttd_url_perawatTriase = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $perawatTriase;
-
-		// Awal HTML
-		// Cek jika path valid dan file ada
-		$html1 .= '<img src="' . $path_ttd_server_perawatTriase . '" width="80" height="80" /><br>
-			' . $decodedData['perawat_pengkaji'] . '
-		';
-
-		$html1 .= '
-				</td>
-			</tr>
-			<tr>
-				<td colspan="5">
-					' . checkboxrm2b($decodedData['false_emergency3']) . ' False Emergency
-				</td>
-			</tr>
-		</table>
-	';
-		$pdf->writeHTML($html1, true, false, true, false, '');
-	}
-	// ============== rm2b triase ========================= //
-	// ============================================================== //
-
-	
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// RM 3 URUTAN 4
-	public function _render_pdfrm3($id_kunjungan, $pdf)
-	{
-	    // Ambil data unit
-		$unit = $this->site_model->get_unit_data();
-		$nama_prov = $unit['nama_prov'];
-		$nama_kab = $unit['nama_kab'];
-		$nama_kec = $unit['nama_kec'];
-		$nama_kel = $unit['nama_kel'];
-		$alamat = $unit['alamat'];
-		$city_sign = $unit['nama_kab'];
-		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-
-		// Ambil data settings
-		$getsettings = $this->site_model->get_settings_data();
-		$site_title = $getsettings['nama'];
-		$telepon = $getsettings['telepon'];
-		$email = $getsettings['email'];
-		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-		// Ambil data FORM RME berdasarkan ID
-		$berkas_klaim = 'rm3';
-		$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
-		if (!$formData) {
-            return;
-        }
-		$link = $formData->nama_berkas;
-		$jsonRaw = $formData->data_json;
-		$id_kunjungan = $formData->id_kunjungan;
-		$id_pasien_rme = $formData->id_pasien_rme;
-		$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-		$idBerkas = $decodedData['id'] ?? null;
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// BATAS AMBIL DATA
-		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-		if ($get_id_konten->num_rows() > 0) {
-			$id_poli = $get_id_konten->row()->id_poly;  
-			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
-			
-			if ($admission_id_kunjungan == NULL) {
-				// DATA DARI ANTRIAN
-				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-				$tgl_admit2 = date($post->waktu_masuk);
-				$tgl_admit = format_indo(date($post->waktu_masuk));
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$nama_poli = $post->nama_poli;
-				$nama_dokter = $post->nama_dokter;
-				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-				// DATA DARI ANTRIAN
-			} else {
-				// DATA DARI ADMISSION
-				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$tgl_admit2 = $post->tgl_admit;
-				$post->umur = countumur($post->tanggal_lahir);
-				$tgl_admit = format_indo(date($post->tgl_admit));
-				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-				$nama_lantai = $post->nama_lantai;
-				$nama_dokter = $post->nama_dokter;
-				$nama_poli = $post->nama_poli;
-				$nama_ruangan = $post->nama_ruangan;
-				$no_bad = $post->no_bad;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$kelas = $post->kelas;
-				$lama = countme($post->tgl_admit);
-				// DATA DARI ADMISSION
-			}
-		} else {
-			redirect('backend/data_klaim');
-		}
-		// BATAS AMBIL DATA
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		// Simpan data perawat jika user level 13
-		$levelUser = $this->session->all_userdata()['level'];
-		if ($levelUser == 13) {
-			$post->id_perawat = $this->session->all_userdata()['id'];
-			$post->nama_perawat = $this->session->all_userdata()['name'];
-		}
-
-		$postmenu = $this->admission_model->get_menu($link);
-		$judulRM = $postmenu->isi;
-		$namaRM = $postmenu->rm;
-		$linkRM = $postmenu->link;
-		$dokters_rm3 = $decodedData['dokter_umum'];
-		// $result_dokter = $this->data_klaim_model->get_karyawan_by_nama($dokters);
-		
-		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
-		// $imagesttd = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
-		// ... Inisialisasi PDF seperti sebelumnya
-
-
-	    $pdf->AddPage();
-		$pdf->SetFont('times', '', 11);
-
-		// HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times','B',16);
-		$pdf->Cell(190,4,$site_title,0,1,'C');
-		$pdf->SetFont('times','B',10);
-		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-		$pdf->Cell(10,4,'',0,1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-		// FONT UTAMA
-		$pdf->SetFont('times','',10);
-
-		// LANJUT DESAIN PDF NYA DISINI>>>
-		// =================== HALAMAN PERTAMA ====================
-		$html1 = '
-	    <h3 align="right">' . $namaRM . '</h3>
-	    <h2 align="center">' . $judulRM . '</h2>
-
-	    <table class="table-borderless" cellpadding="2" cellspacing="0" width="100%">
-	        <tr>
-	            <td><b>Dari Poliklinik/ IGD : </b>' . $nama_poli . '</td>
-	        </tr>
-	        <tr>
-	            <td><b>Kepada YTH </b></td>
-	        </tr>
-	        <tr>
-	            <td><b>Petugas Pendaftaran Pasien Rawat Inap</b></td>
-	        </tr>
-	        <tr>
-	            <td><b>Di Tempat,</b></td>
-	        </tr>
-	        
-	    </table>
-	    <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%" style="margin-bottom:15px;">
-	    	<tr>
-	            <td width="20%"><b>Kelas/ Ruangan</b></td><td width="5%"> : </td><td width="75%">' . $nama_ruangan . '</td>
-	        </tr>
-	        <tr>
-	            <td width="20%"><b>Nama</b></td><td width="5%"> : </td><td width="75%">' . $nama_pasien . '</td>
-	        </tr>
-	        <tr>
-	            <td width="20%"><b>Tanggal Lahir</b></td><td width="5%"> : </td><td width="75%">' . $tgl_lahir . '</td>
-	        </tr>
-	        <tr>
-	            <td width="20%"><b>Jenis Kelamin</b></td><td width="5%"> : </td><td width="75%">' . $jenkel . '</td>
-	        </tr>
-	        <tr>
-	            <td width="20%"><b>No. RM</b></td><td width="5%"> : </td><td width="75%">' . $no_rm . '</td>
-	        </tr>
-	        <tr>
-	            <td width="20%"><b>Pekerjaan</b></td><td width="5%"> : </td><td width="75%">' . $nama_pekerjaan . '</td>
-	        </tr>
-	        <tr>
-	            <td width="20%"><b>Diagnosa</b></td><td width="5%"> : </td><td width="75%">' . $decodedData['diagnosa'] . '</td>
-	        </tr>
-	        <tr>
-	            <td width="20%"><b>Alamat</b></td><td width="5%"> : </td><td width="75%">' . $alamatt . '</td>
-	        </tr>
-	    </table>';
-
-	    $identifikasiMasuk = $decodedData['identifikasi_pasien_masuk'];
-		$opsiIdentifikasi = [
-		    'Preventif',
-		    'Kuratif',
-		    'Paliatif',
-		    'Rehabilitatif'
-		];
-
-		// Jika bisa lebih dari satu, ubah ke array
-		$selectedItems = array_map('trim', explode(',', strtolower($identifikasiMasuk)));
-
-		$html1 .= '<br/><br/><table cellpadding="5" cellspacing="0" width="70%">
-		    <tr>
-		        <td colspan="' . count($opsiIdentifikasi) . '"><b>Identifikasi Pasien Masuk:</b></td>
-		    </tr>
-		    <tr>';
-
-		foreach ($opsiIdentifikasi as $opsi) {
-		    $checked = in_array(strtolower($opsi), $selectedItems) ? '[v]' : '[ ]';
-		    $html1 .= '<td><b>' . $checked . '</b> ' . $opsi . '</td>';
-		}
-
-		$html1 .= '</tr>
-		</table>';
-
-
-		// =================== TTD MASUKKAN KE DALAM =================== //
-        $safe_filename_dokters_rm3 = $this->to_safe_filename($dokters_rm3) . '.jpg';
-		$path_ttd_server_dokters_rm3 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm3;
-		$path_ttd_url_dokters_rm3 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm3;
-		$html1 .= '<br/><h4 align="right">'.$nama_kab. ', ' . date('d / m / Y', strtotime($decodedData['tanggal_city'])) .'</h4>
-		           <h4 align="right">Dokter yang memeriksa,</h4>';
-		if (file_exists($path_ttd_server_dokters_rm3)) {
-		    $html1 .= '<div align="right">
-		                   <img src="' . $path_ttd_url_dokters_rm3 . '" width="80" height="80" />
-		               </div>';
-		}
-		// Nama dokter tetap ditampilkan
-		$html1 .= '<br/><span align="right">' . $decodedData['dokter_umum'] . '</span><br/>';
-		// =================== TTD MASUKKAN KE DALAM =================== //
-		
-
-		// CETAK HALAMAN 1
-		$pdf->writeHTML($html1, true, false, true, false, '');
-	}
-	// RM 3 URUTAN 4
-	//////////////////////////////////////////////////////////////////////////////////////////
-    
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// RM 7 URUTAN 5
-	public function _render_pdfrm7($id_kunjungan, $pdf)
-	{
-	    // Ambil data unit
-	    $unit = $this->site_model->get_unit_data();
-	    $nama_prov = $unit['nama_prov'];
-	    $nama_kab = $unit['nama_kab'];
-	    $nama_kec = $unit['nama_kec'];
-	    $nama_kel = $unit['nama_kel'];
-	    $alamat = $unit['alamat'];
-	    $city_sign = $unit['nama_kab'];
-	    $lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-
-	    // Ambil data settings
-	    $getsettings = $this->site_model->get_settings_data();
-	    $site_title = $getsettings['nama'];
-	    $telepon = $getsettings['telepon'];
-	    $email = $getsettings['email'];
-	    $images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-	    // Ambil data FORM RME berdasarkan ID
-	    $berkas_klaim = 'rm7';
-	    $formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
-	    if (!$formData) {
-	        return;
-	    }
-	    $link = $formData->nama_berkas;
-	    $jsonRaw = $formData->data_json;
-	    $id_kunjungan = $formData->id_kunjungan;
-	    $id_pasien_rme = $formData->id_pasien_rme;
-	    $decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-	    $idBerkas = $decodedData['id'] ?? null;
-
-	    // BATAS AMBIL DATA
-	    $get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-	    if ($get_id_konten->num_rows() > 0) {
-	        $id_poli = $get_id_konten->row()->id_poly;  
-	        $admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
-
-	        if ($admission_id_kunjungan == NULL) {
-	            // DATA DARI ANTRIAN
-	            $post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-	            $tgl_admit2 = date($post->waktu_masuk);
-	            $tgl_admit = format_indo(date($post->waktu_masuk));
-	            $nama_pasien = $post->nama_pasien;
-	            $nik = $post->nik;
-	            $pendidikan_terakhir = $post->pendidikan_terakhir;
-	            $nama_pekerjaan = $post->nama_pekerjaan;
-	            $no_rm = $post->no_rm;
-	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	            $umur = countumur($post->tanggal_lahir);
-	            $jenkel = $post->jenkel;
-	            $alamatt = $post->alamat;
-	            $nama_agama = $post->nama_agama;
-	            $no_hp = $post->no_handphone;
-	            $nama_jenis_pasien = $post->nama_jenis_pasien;
-	            $nama_poli = $post->nama_poli;
-	            $nama_dokter = $post->nama_dokter;
-	            $tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-	        } else {
-	            // DATA DARI ADMISSION
-	            $post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-	            $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-	            $nama_pasien = $post->nama_pasien;
-	            $nik = $post->nik;
-	            $pendidikan_terakhir = $post->pendidikan_terakhir;
-	            $nama_pekerjaan = $post->nama_pekerjaan;
-	            $no_rm = $post->no_rm;
-	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	            $umur = countumur($post->tanggal_lahir);
-	            $jenkel = $post->jenkel;
-	            $alamatt = $post->alamat;
-	            $nama_agama = $post->nama_agama;
-	            $no_hp = $post->no_handphone;
-	            $tgl_admit2 = $post->tgl_admit;
-	            $post->umur = countumur($post->tanggal_lahir);
-	            $tgl_admit = format_indo(date($post->tgl_admit));
-	            $tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-	            $nama_lantai = $post->nama_lantai;
-	            $nama_dokter = $post->nama_dokter;
-	            $nama_poli = $post->nama_poli;
-	            $nama_ruangan = $post->nama_ruangan;
-	            $no_bad = $post->no_bad;
-	            $nama_jenis_pasien = $post->nama_jenis_pasien;
-	            $kelas = $post->kelas;
-	            $lama = countme($post->tgl_admit);
-	        }
-	    } else {
-	        redirect('backend/data_klaim');
-	    }
-
-	    // Simpan data perawat jika user level 13
-	    $levelUser = $this->session->all_userdata()['level'];
-	    if ($levelUser == 13) {
-	        $post->id_perawat = $this->session->all_userdata()['id'];
-	        $post->nama_perawat = $this->session->all_userdata()['name'];
-	    }
-
-	    $postmenu = $this->admission_model->get_menu($link);
-	    $judulRM = $postmenu->isi;
-	    $namaRM = $postmenu->rm;
-	    $linkRM = $postmenu->link;
-	    $dokters_rm7 = $decodedData['dokter_umum'];
-	    $dokters_rm7_2 = $decodedData['dokter_umum_2'];
-	    $dokters_rm7_3 = $decodedData['dokter_umum_3'];
-
-	    
-	    $pdf->AddPage();
-	    $pdf->SetFont('times', '', 11);
-
-	    // HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
-	    $pdf->SetFont('times','B',16);
-	    $pdf->Cell(190,4,$site_title,0,1,'C');
-	    $pdf->SetFont('times','B',10);
-	    $pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-	    $pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-	    $pdf->Cell(10,4,'',0,1);
-	    $pdf->writeHTML("<hr>", true, false, false, false, '');
-
-	    // FONT UTAMA
-	    $pdf->SetFont('times','',10);
-
-	    // LANJUT DESAIN PDF NYA DISINI>>>
-	    $html1 = '
-	    <h3 align="right">' . $namaRM . '</h3>
-	    <h2 align="center">' . $judulRM . '</h2>
-	    <table cellpadding="5" cellspacing="0" style="border:1px solid black; width:100%;">
-	        <tr><td width="15%" style="border:1px solid black;"><b>Tanggal</b></td><td  style="border:1px solid black;" width="18%" ><b>Nama Pasien</b></td><td  style="border:1px solid black;" width="15%" ><b>Umur</b></td><td  style="border:1px solid black;" width="13%" ><b>Kelamin</b></td><td  style="border:1px solid black;" width="16%" ><b>Ruangan</b></td><td  style="border:1px solid black;" width="13%" ><b>Kelas</b></td><td  style="border:1px solid black;" width="10%" ><b>No. RM</b></td></tr>
-	        
-	        <tr><td width="15%" style="border:1px solid black;">' . $tgl_admit . '</td><td  style="border:1px solid black;">' . $nama_pasien . '</td><td  style="border:1px solid black;">' . $umur . '</td><td  style="border:1px solid black;">' . $jenkel . '</td><td  style="border:1px solid black;">' . $nama_ruangan . '</td><td  style="border:1px solid black;">' . $kelas . '</td><td  style="border:1px solid black;">' . $no_rm . '</td></tr>
-	    </table>
-	    <h2 align="center"><b>Konsultasi</b></h2>
-	    <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
-	        <tr><td width="20%"><b>Kepada YTH </b></td><td width="80%">' . $decodedData['kepada_yth'] . '</td></tr>
-	        <tr>';
-	        $safe_filename_dokters_rm7 = $this->to_safe_filename($dokters_rm7) . '.jpg';
-			$path_ttd_server_dokters_rm7 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7;
-			$path_ttd_url_dokters_rm7 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7;
-
-
-			$html1 .= '<td width="20%"><b>T.S Dr</b></td>';
-			if (file_exists($path_ttd_server_dokters_rm7)) {
-			    $html1 .= '<td width="80%"><div align="left">
-			                   <img src="' . $path_ttd_url_dokters_rm7 . '" width="80" height="80" />
-			               </div>';
-			}
-			// Nama dokter tetap ditampilkan
-			$html1 .= '' . $decodedData['dokter_umum'] . '</td>';
-
-	        $html1 .='</tr>
-	        <tr><td width="20%"><b>Ahli</b></td><td width="80%">' . $decodedData['ahli'] . '</td></tr>
-	        <tr><td width="20%"><b>Dengan Hormat,</b></td></tr>
-	        <tr><td width="100%"><b>Mohon konsultasi penanganan lebih lanjut terhadap pasien tersebut diatas yang kamirawat dengan</b></td></tr>
-	        <tr><td width="20%"><b>Diagnosa</b></td><td width="80%">' . $decodedData['diagnosa'] . '</td></tr>
-	        <tr><td width="20%"><b>Terapi Sementara</b></td><td width="80%">' . $decodedData['terapi_sementara'] . '</td></tr>
-	        <tr><td width="20%"><b>Pemeriksaan yang telah dilakukan</b></td><td width="80%">' . $decodedData['pemeriksaan_sementara'] . '</td></tr>
-	    </table>';
-	    
-	    $safe_filename_dokters_rm7_2 = $this->to_safe_filename($dokters_rm7_2) . '.jpg';
-		$path_ttd_server_dokters_rm7_2 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_2;
-		$path_ttd_url_dokters_rm7_2 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_2;
-
-		$html1 .= '<br/><h4 align="right">' . $decodedData['dokter_umum_2'] . '</h4>
-		           <h4 align="right">Salam Sejawat,</h4>';
-		if (file_exists($path_ttd_server_dokters_rm7_2)) {
-		    $html1 .= '<div align="right">
-		                   <img src="' . $path_ttd_url_dokters_rm7_2 . '" width="80" height="80" />
-		               </div>';
-		}
-		// Nama dokter tetap ditampilkan
-		$html1 .= '<h4 align="right">' . $decodedData['dokter_umum_2'] . '</h4>';
-
-
-	    $pdf->writeHTML($html1, true, false, true, false, '');
-	    $pdf->AddPage();
-
-		// Judul
-		// $html2 .= '<br/><h2 align="center"><b>Jawaban Konsultasi</b></h2>';
-
-		// Tampilkan gambar setelah teks "Yth T.S,"
-		if (!empty($decodedData['image_drawer']['state_image_11'])) {
-		    $imgJson = $decodedData['image_drawer']['state_image_11'];
-
-		    // Step 1: Decode string JSON menjadi array
-		    $imgData = json_decode($imgJson, true);
-		    
-		    // Step 2: Ambil base64-nya
-		    if (!empty($imgData['markers'][0]['drawingImgUrl'])) {
-		        $src = $imgData['markers'][0]['drawingImgUrl'];
-
-		        if (strpos($src, 'data:image') === 0) {
-		            [$meta, $content] = explode(',', $src);
-		            $mime = explode(':', explode(';', $meta)[0])[1]; // image/png
-		            $type = strtoupper(substr($mime, strpos($mime, '/') + 1)); // PNG
-
-		            $imageData = base64_decode($content);
-		            $tmpPath = FCPATH . 'assets2/rme/img/testttd' . strtolower($type);
-		            file_put_contents($tmpPath, $imageData);
-
-		            if (file_exists($tmpPath)) {
-		                // Menambahkan teks "Yth T.S," dengan margin dan gambar setelahnya
-		                $pdf->SetXY(10, $pdf->GetY() + 5); // Memberikan jarak vertikal sebelum gambar
-		                $pdf->SetFont('times', 'B', 14); // 'B' untuk bold, 16 adalah ukuran font
-						// Menampilkan teks
-						$pdf->Cell(0, 0, 'Jawaban Konsultasi', 0, 1, 'C');
-						$pdf->SetFont('times', '', 11); // 'B' untuk bold, 16 adalah ukuran font
-		                $pdf->Cell(20, 5, 'Yth T.S,', 0, 1); // Tampilkan teks "Yth T.S,"
-		                $pdf->Cell(20, 5, $nama_pasien, 0, 1); // Tampilkan teks "Yth T.S,"
-		                
-		                // Tampilkan gambar setelah teks
-		                $pdf->SetXY(10, $pdf->GetY() + 5); // Mengatur posisi gambar setelah teks
-		                $pdf->Image($tmpPath, $pdf->GetX(), $pdf->GetY(), 20, 20, $type); // Menampilkan gambar
-		                
-		                // Memberikan jarak setelah gambar
-		                $pdf->Ln(20); // Jarak setelah gambar, sesuaikan sesuai kebutuhan
-		                
-		                // Menampilkan informasi lain setelah gambar
-		                $pdf->SetXY(10, $pdf->GetY() + 5); // Memberikan jarak vertikal untuk teks berikutnya
-
-		                $pdf->Cell(20, 5, date('d / m / Y', strtotime($decodedData['tanggal_jawaban'])), 0, 1); // Tanggal jawaban
-		                
-		                // Hapus file sementara setelah penggunaan
-		                unlink($tmpPath);
-		            }
-		        }
-		    }
-		}
-
-		$html2 ='<table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
-	        <tr><td width="20%"><b>Dengan Hormat, </b></td></tr>
-	        <tr><td width="100%"><b>Mengenai pasien yang dikonsulkan pada pemeriksaan os ini didapati :</b></td></tr>
-	        <tr><td width="100%">' . $decodedData['hasil_pemeriksaan'] . '</td></tr>
-	        <tr><td width="100%"><b>Advis</b></td></tr>
-	        <tr><td width="100%">' . $decodedData['advis'] . '</td></tr>
-	    </table>';
-
-	    $OS = $decodedData['os'];
-		$opsiOS = [
-		    'Dikembalikan',
-		    'Dirawat bersama diambil',
-		    'Alih (Sementara / Selanjutnya)'
-		    
-		];
-
-		// Jika bisa lebih dari satu, ubah ke array
-		$selectedItems = array_map('trim', explode(',', strtolower($OS)));
-
-		$html2 .= '<br/><br/><table cellpadding="5" cellspacing="0" width="100%">
-		    <tr>
-		        <td colspan="' . count($opsiOS) . '"><b>O.S**</b></td>
-		    </tr>
-		    <tr>';
-
-		foreach ($opsiOS as $opsi) {
-		    $checked = in_array(strtolower($opsi), $selectedItems) ? '[v]' : '[ ]';
-		    $html2 .= '<td><b>' . $checked . '</b> '. $opsi . '</td>';
-		}
-
-		$html2 .= '</tr>
-		</table>';
-
-		$safe_filename_dokters_rm7_3 = $this->to_safe_filename($dokters_rm7_3) . '.jpg';
-		$path_ttd_server_dokters_rm7_3 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_3;
-		$path_ttd_url_dokters_rm7_3 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokters_rm7_3;
-
-
-		$html2 .= '<br/><h4 align="right">Salam Sejawat,</h4>';
-		if (file_exists($path_ttd_server_dokters_rm7_3)) {
-		    $html2 .= '<div align="right">
-		                   <img src="' . $path_ttd_url_dokters_rm7_3 . '" width="80" height="80" />
-		               </div>';
-		}
-		// Nama dokter tetap ditampilkan
-		$html2 .= '<h4 align="right">' . $decodedData['dokter_umum_3'] . '</h4>';
-
-
-	    $pdf->writeHTML($html2, true, false, true, false, '');
-	    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	    $pdf->AddPage();
-	    // === Bagian KONSULTASI ===
-		$jumlahKonsultasi = count($decodedData['kepada_yth_tb1']); // asumsikan semua array panjangnya sama
-
-		for ($i = 0; $i < $jumlahKonsultasi; $i++) {
-		    $html3 = '
-		    <h3 align="right">' . htmlspecialchars($namaRM) . '</h3>
-		    <h2 align="center">' . htmlspecialchars($judulRM) . '</h2>
-
-		    <table cellpadding="5" cellspacing="0" style="border:1px solid black; width:100%;">
-		        <tr>
-		            <td style="border:1px solid black;"><b>Tanggal</b></td>
-		            <td style="border:1px solid black;"><b>Nama Pasien</b></td>
-		            <td style="border:1px solid black;"><b>Umur</b></td>
-		            <td style="border:1px solid black;"><b>Kelamin</b></td>
-		            <td style="border:1px solid black;"><b>Ruangan</b></td>
-		            <td style="border:1px solid black;"><b>Kelas</b></td>
-		            <td style="border:1px solid black;"><b>No. RM</b></td>
-		        </tr>
-		        <tr>
-		            <td style="border:1px solid black;">' . htmlspecialchars($tgl_admit) . '</td>
-		            <td style="border:1px solid black;">' . htmlspecialchars($nama_pasien) . '</td>
-		            <td style="border:1px solid black;">' . htmlspecialchars($umur) . '</td>
-		            <td style="border:1px solid black;">' . htmlspecialchars($jenkel) . '</td>
-		            <td style="border:1px solid black;">' . htmlspecialchars($nama_ruangan) . '</td>
-		            <td style="border:1px solid black;">' . htmlspecialchars($kelas) . '</td>
-		            <td style="border:1px solid black;">' . htmlspecialchars($no_rm) . '</td>
-		        </tr>
-		    </table>
-
-		    <h2 align="center"><b>Konsultasi</b></h2>
-		    <table cellpadding="5" cellspacing="0" width="100%">
-		        <tr><td width="20%"><b>Kepada YTH</b></td><td width="80%">' . htmlspecialchars($decodedData['kepada_yth_tb1'][$i] ?? '-') . '</td></tr>
-		        <tr>';
-		        $dokter_umum_tb1_1 = $decodedData['dokter_umum_tb1_1'];
-		        $safe_filename_dokter_umum_tb1_1 = $this->to_safe_filename($dokter_umum_tb1_1) . '.jpg';
-				$path_ttd_server_dokters_umum_tb1_1 = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_dokter_umum_tb1_1;
-				$path_ttd_url_dokters_umum_tb1_1 = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_dokter_umum_tb1_1;
-
-
-				$html3 .= '<td width="20%"><b>T.S Dr</b></td>';
-				if (file_exists($path_ttd_server_dokters_umum_tb1_1)) {
-				    $html3 .= '<td width="80%"><div align="left">
-				                   <img src="' . $path_ttd_url_dokters_umum_tb1_1 . '" width="80" height="80" />
-				               </div>';
-				}
-				// Nama dokter tetap ditampilkan
-				$html3 .= '' . $decodedData['dokter_umum_tb1_1'] . '</td>';
-
-		        $html3 .='</tr>
-		        <tr><td width="20%"><b>Ahli</b></td><td width="80%">' . htmlspecialchars($decodedData['ahli_tb1'][$i] ?? '-') . '</td></tr>
-		        <tr><td><b>Dengan Hormat,</b></td></tr>
-		        <tr><td colspan="2"><b>Mohon konsultasi penanganan lebih lanjut terhadap pasien tersebut di atas yang kami rawat dengan:</b></td></tr>
-		        <tr><td><b>Diagnosa</b></td><td>' . htmlspecialchars($decodedData['diagnosa_tb1'][$i] ?? '-') . '</td></tr>
-		        <tr><td><b>Terapi Sementara</b></td><td>' . htmlspecialchars($decodedData['terapi_sementara_tb1'][$i] ?? '-') . '</td></tr>
-		        <tr><td><b>Pemeriksaan yang telah dilakukan</b></td><td>' . htmlspecialchars($decodedData['pemeriksaan_sementara_tb1'][$i] ?? '-') . '</td></tr>
-		    </table>';
-
-		    // TTD
-		    $dokter_ttd = $decodedData['dokter_umum_tb1_2'] ?? '';
-		    $safe_filename = $this->to_safe_filename($dokter_ttd) . '.jpg';
-		    $path_ttd_server = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename;
-		    $path_ttd_url = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename;
-
-		    $html3 .= '<br/><h4 align="right">' . htmlspecialchars($dokter_ttd) . '</h4>';
-		    $html3 .= '<h4 align="right">Salam Sejawat,</h4>';
-		    if (file_exists($path_ttd_server)) {
-		        $html3 .= '<div align="right"><img src="' . $path_ttd_url . '" width="80" height="80" /></div>';
-		    }
-		    $html3 .= '<h4 align="right">' . htmlspecialchars($dokter_ttd) . '</h4>';
-
-		    $pdf->writeHTML($html3, true, false, true, false, '');
-		    $pdf->AddPage();
-
-
-		    // Tampilkan gambar setelah teks "Yth T.S,"
-			if (!empty($decodedData['image_drawer']['state_image_11'])) {
-			    $imgJson = $decodedData['image_drawer']['state_image_11'];
-
-			    // Step 1: Decode string JSON menjadi array
-			    $imgData = json_decode($imgJson, true);
-			    
-			    // Step 2: Ambil base64-nya
-			    if (!empty($imgData['markers'][0]['drawingImgUrl'])) {
-			        $src = $imgData['markers'][0]['drawingImgUrl'];
-
-			        if (strpos($src, 'data:image') === 0) {
-			            [$meta, $content] = explode(',', $src);
-			            $mime = explode(':', explode(';', $meta)[0])[1]; // image/png
-			            $type = strtoupper(substr($mime, strpos($mime, '/') + 1)); // PNG
-
-			            $imageData = base64_decode($content);
-			            $tmpPath = FCPATH . 'assets2/rme/img/testttd' . strtolower($type);
-			            file_put_contents($tmpPath, $imageData);
-
-			            if (file_exists($tmpPath)) {
-			                // Menambahkan teks "Yth T.S," dengan margin dan gambar setelahnya
-			                $pdf->SetXY(10, $pdf->GetY() + 5); // Memberikan jarak vertikal sebelum gambar
-			                $pdf->SetFont('times', 'B', 14); // 'B' untuk bold, 16 adalah ukuran font
-							// Menampilkan teks
-							$pdf->Cell(0, 0, 'Jawaban Konsultasi', 0, 1, 'C');
-							$pdf->SetFont('times', '', 11); // 'B' untuk bold, 16 adalah ukuran font
-			                $pdf->Cell(20, 5, 'Yth T.S,', 0, 1); // Tampilkan teks "Yth T.S,"
-			                $pdf->Cell(20, 5, $nama_pasien, 0, 1); // Tampilkan teks "Yth T.S,"
-			                
-			                // Tampilkan gambar setelah teks
-			                $pdf->SetXY(10, $pdf->GetY() + 5); // Mengatur posisi gambar setelah teks
-			                $pdf->Image($tmpPath, $pdf->GetX(), $pdf->GetY(), 20, 20, $type); // Menampilkan gambar
-			                
-			                // Memberikan jarak setelah gambar
-			                $pdf->Ln(20); // Jarak setelah gambar, sesuaikan sesuai kebutuhan
-			                
-			                // Menampilkan informasi lain setelah gambar
-			                $pdf->SetXY(10, $pdf->GetY() + 5); // Memberikan jarak vertikal untuk teks berikutnya
-
-			                $pdf->Cell(20, 5, date('d / m / Y', strtotime($decodedData['tanggal_jawaban'])), 0, 1); // Tanggal jawaban
-			                
-			                // Hapus file sementara setelah penggunaan
-			                unlink($tmpPath);
-			            }
-			        }
-			    }
-			}
-
-
-
-		    // === Jawaban Konsultasi
-		    $html4 = '
-		    <table cellpadding="5" cellspacing="0" width="100%">
-		        <tr><td><b>Dengan Hormat,</b></td></tr>
-		        <tr><td><b>Mengenai pasien yang dikonsulkan pada pemeriksaan OS ini didapati:</b></td></tr>
-		        <tr><td>' . htmlspecialchars($decodedData['hasil_pemeriksaan_tb1'][$i] ?? '-') . '</td></tr>
-		        <tr><td><b>Advis</b></td></tr>
-		        <tr><td>' . htmlspecialchars($decodedData['advis_tb1'][$i] ?? '-') . '</td></tr>
-		    </table>';
-
-		    $OS = strtolower($decodedData['os_tb1'][$i] ?? '');
-		    $opsiOS = ['Dikembalikan', 'Dirawat bersama diambil', 'Alih (Sementara / Selanjutnya)'];
-		    $selectedItems = array_map('trim', explode(',', $OS));
-
-		    $html4 .= '<br/><br/><table cellpadding="5" cellspacing="0" width="100%">
-		        <tr><td colspan="' . count($opsiOS) . '"><b>O.S**</b></td></tr><tr>';
-
-		    foreach ($opsiOS as $opsi) {
-		        $checked = in_array(strtolower($opsi), $selectedItems) ? '[v]' : '[ ]';
-		        $html4 .= '<td><b>' . $checked . '</b> ' . $opsi . '</td>';
-		    }
-
-		    $html4 .= '</tr></table>';
-
-		    $dokter_jawab = $decodedData['dokter_umum_tb1_3'] ?? '';
-		    $safe_filename_jawab = $this->to_safe_filename($dokter_jawab) . '.jpg';
-		    $path_ttd_server_jawab = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename_jawab;
-		    $path_ttd_url_jawab = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename_jawab;
-
-		    $html4 .= '<br/><h4 align="right">Salam Sejawat,</h4>';
-		    if (file_exists($path_ttd_server_jawab)) {
-		        $html4 .= '<div align="right"><img src="' . $path_ttd_url_jawab . '" width="80" height="80" /></div>';
-		    }
-		    $html4 .= '<h4 align="right">' . htmlspecialchars($dokter_jawab) . '</h4>';
-
-		    $pdf->writeHTML($html4, true, false, true, false, '');
-		}
-
-	    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-	}
-	// RM 7 URUTAN 5
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// TTD SAMPAI SINI 30062025
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// RM 10 URUTAN 8
-	public function _render_pdfrm10($id_kunjungan, $pdf)
-	{
-	    // Ambil data unit
-		$unit = $this->site_model->get_unit_data();
-		$nama_prov = $unit['nama_prov'];
-		$nama_kab = $unit['nama_kab'];
-		$nama_kec = $unit['nama_kec'];
-		$nama_kel = $unit['nama_kel'];
-		$alamat = $unit['alamat'];
-		$city_sign = $unit['nama_kab'];
-		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-
-		// Ambil data settings
-		$getsettings = $this->site_model->get_settings_data();
-		$site_title = $getsettings['nama'];
-		$telepon = $getsettings['telepon'];
-		$email = $getsettings['email'];
-		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-		// Ambil data FORM RME berdasarkan ID
-		$berkas_klaim = 'rm10';
-		$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
-		if (!$formData) {
-            return;
-        }
-		$link = $formData->nama_berkas;
-		$jsonRaw = $formData->data_json;
-		$id_kunjungan = $formData->id_kunjungan;
-		$id_pasien_rme = $formData->id_pasien_rme;
-		$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-		$idBerkas = $decodedData['id'] ?? null;
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// BATAS AMBIL DATA
-		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-		if ($get_id_konten->num_rows() > 0) {
-			$id_poli = $get_id_konten->row()->id_poly;  
-			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
-			
-			if ($admission_id_kunjungan == NULL) {
-				// DATA DARI ANTRIAN
-				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-				$tgl_admit2 = date($post->waktu_masuk);
-				$tgl_admit = format_indo(date($post->waktu_masuk));
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$nama_poli = $post->nama_poli;
-				$nama_dokter = $post->nama_dokter;
-				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-				// DATA DARI ANTRIAN
-			} else {
-				// DATA DARI ADMISSION
-				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$tgl_admit2 = $post->tgl_admit;
-				$post->umur = countumur($post->tanggal_lahir);
-				$tgl_admit = format_indo(date($post->tgl_admit));
-				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-				$nama_lantai = $post->nama_lantai;
-				$nama_dokter = $post->nama_dokter;
-				$nama_poli = $post->nama_poli;
-				$nama_ruangan = $post->nama_ruangan;
-				$no_bad = $post->no_bad;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$kelas = $post->kelas;
-				$lama = countme($post->tgl_admit);
-				// DATA DARI ADMISSION
-			}
-		} else {
-			redirect('backend/data_klaim');
-		}
-		// BATAS AMBIL DATA
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		// Simpan data perawat jika user level 13
-		$levelUser = $this->session->all_userdata()['level'];
-		if ($levelUser == 13) {
-			$post->id_perawat = $this->session->all_userdata()['id'];
-			$post->nama_perawat = $this->session->all_userdata()['name'];
-		}
-
-		$postmenu = $this->admission_model->get_menu($link);
-		$judulRM = $postmenu->isi;
-		$namaRM = $postmenu->rm;
-		$linkRM = $postmenu->link;
-		$dokters = $decodedData['dokter_umum'];
-		$result_dokter = $this->data_klaim_model->get_karyawan_by_nama($dokters);
-		
-		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
-		// $imagesttd = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
-		// ... Inisialisasi PDF seperti sebelumnya
-
-
-	    $pdf->AddPage();
-		$pdf->SetFont('times', '', 11);
-
-		// HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times','B',16);
-		$pdf->Cell(190,4,$site_title,0,1,'C');
-		$pdf->SetFont('times','B',10);
-		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-		$pdf->Cell(10,4,'',0,1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-		// FONT UTAMA
-		$pdf->SetFont('times','',10);
-
-		// LANJUT DESAIN PDF NYA DISINI>>>
-		$html1 = '
-	    <h3 align="right">' . $namaRM . '</h3>
-	    <h2 align="center">' . $judulRM . '</h2>
-
-	    <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
-	        <tr>
-	            <td><b>Nama Pasien : </b>' . $nama_pasien . '</td>
-	        </tr>
-	        <tr>
-	            <td><b>No RM : </b>' . $no_rm . '</td>
-	        </tr>
-	        <tr>
-	            <td><b>Kelas/ Ruangan : </b>' . $kelas . ' / '.$nama_ruangan.'</td>
-	        </tr>
-	    </table>';
-$html1 .= '<br><h3>Hasil Laboratorium</h3>';
-		// Awal tabel hasil lab (di dalam <td>)
-		$html1 .= '<table cellpadding="4" cellspacing="0" border="1" width="100%">
-		    <thead>
-		        <tr style="background-color:#fff;">
-		        	<th width="70%"><b>Pemeriksaan Penunjang</b></th>
-		            <th width="20%"><b>Tanggal Pemeriksaan</b></th>
-		            
-		            <th width="10%" align="center"><b>Qty</b></th>
-		        </tr>
-		    </thead>
-		    <tbody>';
-
-		$invoice_data = $this->data_klaim_model->get_invoice_data($id_kunjungan);
-		$lab_rows = '';
-		$last_kunjungan = null;
-
-		foreach ($invoice_data as $invoice) {
-		    foreach ($invoice['details'] as $detail) {
-		        
-
-		        $lab_rows .= '<tr>
-		        	<td width="70%">' . $detail['nama_transaksi'] . '</td>
-		            <td width="20%">' . date('d-m-Y', strtotime($detail['tanggal_input'])) . '</td>
-		            
-		            <td align="center" width="10%">' . $detail['qty'] . '</td>
-		        </tr>';
-		    }
-		}
-
-		if (empty($lab_rows)) {
-		    $lab_rows = '<tr><td colspan="3" align="center">- Tidak ada Pemeriksaan laboratorium </td></tr>';
-		}
-
-		$html1 .= $lab_rows;
-		// Tutup tabel hasil lab dan td
-		$html1 .= '</tbody></table>';
-
-		$rad_data = $this->data_klaim_model->get_radiologi_by_patient($id_kunjungan);
-
-$html1 .= '<br><h3>Hasil Radiologi dan USG</h3>';
-
-if (!empty($rad_data)) {
-    $html1 .= '<table border="1" cellpadding="5" cellspacing="0" width="100%">';
-    $html1 .= '<thead><tr><th width="35%">Pemeriksaan Penunjang</th><th width="15%">Tanggal Pemeriksaan</th><th width="50%">Hasil</th></tr></thead>';
-    $html1 .= '<tbody>';
-
-    $no = 1;
-    foreach ($rad_data as $row) {
-        $html1 .= '<tr>';
-        $html1 .= '<td width="35%">' . $row['nama'] . '</td>';
-        $html1 .= '<td width="15%">' . date('d-m-Y', strtotime($row['created_at'])) . '</td>';
-        $html1 .= '<td width="50%">' . $row['title'] .' '. $row['note'] . '</td>';
-        
-
-        
-        $html1 .= '</tr>';
-    }
-
-    $html1 .= '</tbody></table>';
-} else {
-    $html1 .= '<p>Tidak ada Pemeriksaan Radiologi.</p>';
-}
-$html1 .= '<br><h3>Hasil EKG</h3>';
-		$ekgText = '';
-		foreach ($decodedData['pemeriksaanpenunjang'] as $item) {
-		    if (stripos($item, 'EKG') !== false) {
-		        $ekgText = $item;
-		        break;
-		    }
-		}
-
-		// Tambahkan ke HTML jika ada
-		if (!empty($ekgText)) {
-		    $html1 .= '
-		    <table border="1" cellpadding="5" cellspacing="0" width="100%">
-		        <tr>
-		            <td><b>' . $ekgText . '</b></td>
-		        </tr>
-		    </table>';
-		} else {
-		    $html1 .= '<p>Tidak ada hasil EKG ditemukan.</p>';
-		}
-		// LANJUT DESAIN PDF NYA DISINI>>>
-		$pdf->writeHTML($html1, true, false, true, false, '');
-	}
-	// RM 10 URUTAN 8
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	public function _render_pdfrmcppt($id_kunjungan, $pdf)
-	{
-	    // Ambil data unit
-	    $unit = $this->site_model->get_unit_data();
-	    $lokasi = $unit['alamat'] . ', Kelurahan ' . $unit['nama_kel'] . ', Kecamatan ' . $unit['nama_kec'] . ', ' . $unit['nama_kab'] . ', ' . $unit['nama_prov'];
-
-	    // Ambil data settings
-	    $getsettings = $this->site_model->get_settings_data();
-	    $site_title = $getsettings['nama'];
-	    $imagesrm16 = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-	    // Ambil data FORM RME
-	    $berkas_klaim = 'rm_cppt';
-	    $formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
-	    if (!$formData) return;
-
-	    $link = $formData->nama_berkas;
-	    $jsonRaw = $formData->data_json;
-	    $decodedData = json_decode($jsonRaw, true);
-
-	    // Ambil data kunjungan
-	    $get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-	    if ($get_id_konten->num_rows() > 0) {
-	        $admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
-
-	        if ($admission_id_kunjungan == NULL) {
-	            $post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-	            $no_bpjs = $post->no_bpjs;
-	            $nama_pasien = $post->nama_pasien;
-	            $nik = $post->nik;
-	            $pendidikan_terakhir = $post->pendidikan_terakhir;
-	            $nama_pekerjaan = $post->nama_pekerjaan;
-	            $no_rm = $post->no_rm;
-	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	            $nama_suku = $post->nama_suku;
-	            $umur = countumur($post->tanggal_lahir);
-	            $jenkel = $post->jenkel;
-	            $alamatt = $post->alamat;
-	            $nama_agama = $post->nama_agama;
-	            $no_hp = $post->no_handphone;
-	            $nama_jenis_pasien = $post->nama_jenis_pasien;
-	            $kelas = $post->klsrawat;
-	            $nama_poli = $post->nama_poli;
-	            $nama_dokter = $post->nama_dokter;
-	            $nama_ruangan = '-';
-	            $kelas = '-';
-	        } else {
-	            $post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-	            // $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-	            $nama_pasien = $post->nama_pasien;
-	            $nik = $post->nik;
-	            $pendidikan_terakhir = $post->pendidikan_terakhir;
-	            $nama_pekerjaan = $post->nama_pekerjaan;
-	            $no_rm = $post->no_rm;
-	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	            $umur = countumur($post->tanggal_lahir);
-	            $jenkel = $post->jenkel;
-	            $alamatt = $post->alamat;
-	            $nama_suku = $post->nama_suku;
-	            $nama_agama = $post->nama_agama;
-	            $no_hp = $post->no_handphone;
-	            $nama_poli = $post->nama_poli;
-	            $nama_dokter = $post->nama_dokter;
-	            $nama_ruangan = $post->nama_ruangan;
-	            $kelas = $post->klsrawat;
-	        }
-	    } else {
-	        redirect('backend/data_klaim');
-	    }
-
-	    // Simpan data perawat jika level 13
-	    $levelUser = $this->session->userdata('level');
-	    if ($levelUser == 13) {
-	        $post->id_perawat = $this->session->userdata('id');
-	        $post->nama_perawat = $this->session->userdata('name');
-	    }
-
-	    // Ambil data menu
-	    $postmenu = $this->admission_model->get_menu($link);
-	    $judulRM = $postmenu->isi;
-	    $namaRM = $postmenu->rm;
-
-	    $pdf->AddPage();
-	    $pdf->SetFont('times', '', 11);
-
-	    // Header PDF
-	    // HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($imagesrm16, 10,10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times','B',16);
-		$pdf->Cell(190,4,$site_title,0,1,'C');
-		$pdf->SetFont('times','B',10);
-		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-		$pdf->Cell(10,4,'',0,1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-
-	    // Identitas Pasien
-	    $pdf->SetFont('times','',10);
-	    $html = '
-	    <h3 align="right">' . $namaRM . '</h3>
-	    <h2 align="center">' . $judulRM . '</h2>
-	    <table cellpadding="5" cellspacing="0" width="100%">
-	        <tr>
-	        	<td width="50%"><b>Nama Pasien : </b>' . $nama_pasien . '</td>
-	        	<td width="50%"><b>Agama : </b>' . $nama_agama . '</td>
-	        </tr>
-	        <tr>
-	            <td width="50%"><b>Tanggal Lahir : </b>' . $tgl_lahir . '</td>
-	            <td width="50%"><b>Suku/ Bangsa : </b>' . $nama_suku . '</td>
-	        </tr>
-	        <tr>
-	        	<td width="50%"><b>Jenis Kelamin : </b>' . $jenkel . '</td>
-	        	<td width="50%"><b>Alamat : </b>' . $alamatt . '</td>
-	        </tr>
-	        <tr>
-	        	<td width="50%"><b>No. RM : </b>' . $no_rm . '</td>
-	        	<td width="50%"><b>NIK : </b>' . $nik . '</td>
-	        </tr>
-	        
-	    </table><br/>';
-
-	    // Ambil isi data
-	    $tanggal_jam = $decodedData['tanggal_jam'] ?? [];
-	    $ppa = $decodedData['ppa'] ?? [];
-	    $perawat_nama_cppt = $decodedData['perawat_nama'] ?? [];
-	    $dokter_umum_nama_cppt = $decodedData['dokter_umum_nama'] ?? [];
-	    $soap_s = $decodedData['soap_s'] ?? [];
-	    $soap_o = $decodedData['soap_o'] ?? [];
-	    $soap_a = $decodedData['soap_a'] ?? [];
-	    $soap_p = $decodedData['soap_p'] ?? [];
-	    $instruksi = $decodedData['instruksi'] ?? [];
-
-	    $html .= '<table border="1" cellpadding="5" cellspacing="0" width="100%">
-	    <tr style="font-weight: bold; text-align: center;">
-	        <td width="4%">No</td>
-	        <td width="12%">Tanggal / Jam</td>
-	        <td width="18%">Profesional Pemberi Asuhan</td>
-	        <td width="26%">Hasil Asesmen Pasien dan Pemberian Pelayanan</td>
-	        <td width="20%">Instruksi PPA</td>
-	        <td width="20%">Review & Verifikasi DPJP</td>
-	    </tr>';
-
-	for ($i = 0; $i < count($tanggal_jam); $i++) {
-	    if (empty($tanggal_jam[$i]) && empty($ppa[$i])) continue;
-
-	    $tgljam = !empty($tanggal_jam[$i]) ? date('d-m-Y H:i', strtotime($tanggal_jam[$i])) : '-';
-	    $ppa_val = $ppa[$i] ?? '-';
-	    $s = nl2br($soap_s[$i] ?? '-');
-	    $o = nl2br($soap_o[$i] ?? '-');
-	    $a = nl2br($soap_a[$i] ?? '-');
-	    $p = nl2br($soap_p[$i] ?? '-');
-	    $instr = nl2br($instruksi[$i] ?? '-');
-	    $dokter_cppt = $dokter_umum_nama_cppt[$i] ?? '-';
-	    $perawat_cppt = $perawat_nama_cppt[$i] ?? '-';
-
-	    $soap_all = "<b>S:</b> $s<br/><b>O:</b> $o<br/><b>A:</b> $a<br/><b>P:</b> $p";
-
-	    // === QR Perawat ===
-	    $safe_perawat = $this->to_safe_filename($perawat_cppt) . '.jpg';
-	    $path_qr_server_perawat = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_perawat;
-	    $path_qr_url_perawat = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_perawat;
-
-	    $ppa_with_qr = file_exists($path_qr_server_perawat)
-	        ? '<img src="' . $path_qr_url_perawat . '" width="60" height="60" /><br/>'
-	        : '-<br/>' . $perawat_cppt;
-	    $ppa_with_qr .= nl2br($ppa_val) . '<br/>' . $perawat_cppt;
-
-	   
-	    // === QR Dokter ===
-	    $safe_dokter = $this->to_safe_filename($dokter_cppt) . '.jpg';
-	    $path_qr_server_dokter = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_dokter;
-	    $path_qr_url_dokter = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_dokter;
-
-	    $qr_html_dokter = file_exists($path_qr_server_dokter)
-	        ? '<img src="' . $path_qr_url_dokter . '" width="60" height="60" /><br/>' . $dokter_cppt
-	        : '-<br/>' . $dokter_cppt;
-
-	    // === Tulis baris tabel PDF ===
-	    $html .= "<tr>
-	        <td align='center'>" . ($i + 1) . "</td>
-	        <td>$tgljam</td>
-	        <td align='center'>$ppa_with_qr</td>
-	        <td>$soap_all</td>
-	        <td>$instr</td>
-	        <td align='center'>$qr_html_dokter</td>
-	    </tr>";
-	}
-
-
-	$html .= '</table>';
-
-
-	    $pdf->writeHTML($html, true, false, true, false, '');
-	}
-	// RM 6 URUTAN 8
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// RM 12b URUTAN 9
-	// public function _render_pdfrm12b($id_kunjungan, $pdf)
-	// {
-	//     // Ambil data unit
-	// 	$unit = $this->site_model->get_unit_data();
-	// 	$nama_prov = $unit['nama_prov'];
-	// 	$nama_kab = $unit['nama_kab'];
-	// 	$nama_kec = $unit['nama_kec'];
-	// 	$nama_kel = $unit['nama_kel'];
-	// 	$alamat = $unit['alamat'];
-	// 	$city_sign = $unit['nama_kab'];
-	// 	$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-
-	// 	// Ambil data settings
-	// 	$getsettings = $this->site_model->get_settings_data();
-	// 	$site_title = $getsettings['nama'];
-	// 	$telepon = $getsettings['telepon'];
-	// 	$email = $getsettings['email'];
-	// 	$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-	// 	// Ambil data FORM RME berdasarkan ID
-	// 	$berkas_klaim = 'rm12b';
-	// 	$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
-	// 	if (!$formData) {
-    //         return;
-    //     }
-	// 	$link = $formData->nama_berkas;
-	// 	$jsonRaw = $formData->data_json;
-	// 	$id_kunjungan = $formData->id_kunjungan;
-	// 	$id_pasien_rme = $formData->id_pasien_rme;
-	// 	$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-	// 	$idBerkas = $decodedData['id'] ?? null;
-
-	// 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 	// BATAS AMBIL DATA
-	// 	$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-	// 	if ($get_id_konten->num_rows() > 0) {
-	// 		$id_poli = $get_id_konten->row()->id_poly;  
-	// 		$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
-			
-	// 		if ($admission_id_kunjungan == NULL) {
-	// 			// DATA DARI ANTRIAN
-	// 			$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-	// 			$tgl_admit2 = date($post->waktu_masuk);
-	// 			$tgl_admit = format_indo(date($post->waktu_masuk));
-	// 			$nama_pasien = $post->nama_pasien;
-	// 			$nik = $post->nik;
-	// 			$pendidikan_terakhir = $post->pendidikan_terakhir;
-	// 			$nama_pekerjaan = $post->nama_pekerjaan;
-	// 			$no_rm = $post->no_rm;
-	// 			$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	// 			$nama_suku = $post->nama_suku;
-	// 			$umur = countumur($post->tanggal_lahir);
-	// 			$jenkel = $post->jenkel;
-	// 			$alamatt = $post->alamat;
-	// 			$nama_agama = $post->nama_agama;
-	// 			$no_hp = $post->no_handphone;
-	// 			$nama_jenis_pasien = $post->nama_jenis_pasien;
-	// 			$nama_poli = $post->nama_poli;
-	// 			$nama_dokter = $post->nama_dokter;
-	// 			$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-	// 			// DATA DARI ANTRIAN
-	// 		} else {
-	// 			// DATA DARI ADMISSION
-	// 			$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-	// 			$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-	// 			$nama_pasien = $post->nama_pasien;
-	// 			$nik = $post->nik;
-	// 			$pendidikan_terakhir = $post->pendidikan_terakhir;
-	// 			$nama_pekerjaan = $post->nama_pekerjaan;
-	// 			$no_rm = $post->no_rm;
-	// 			$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	// 			$umur = countumur($post->tanggal_lahir);
-	// 			$jenkel = $post->jenkel;
-	// 			$alamatt = $post->alamat;
-	// 			$nama_suku = $post->nama_suku;
-	// 			$nama_agama = $post->nama_agama;
-	// 			$no_hp = $post->no_handphone;
-	// 			$tgl_admit2 = $post->tgl_admit;
-	// 			$post->umur = countumur($post->tanggal_lahir);
-	// 			$tgl_admit = format_indo(date($post->tgl_admit));
-	// 			$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-	// 			$nama_lantai = $post->nama_lantai;
-	// 			$nama_dokter = $post->nama_dokter;
-	// 			$nama_poli = $post->nama_poli;
-	// 			$nama_ruangan = $post->nama_ruangan;
-	// 			$no_bad = $post->no_bad;
-	// 			$nama_jenis_pasien = $post->nama_jenis_pasien;
-	// 			$kelas = $post->kelas;
-	// 			$lama = countme($post->tgl_admit);
-	// 			// DATA DARI ADMISSION
-	// 		}
-	// 	} else {
-	// 		redirect('backend/data_klaim');
-	// 	}
-	// 	// BATAS AMBIL DATA
-	// 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// 	// Simpan data perawat jika user level 13
-	// 	$levelUser = $this->session->all_userdata()['level'];
-	// 	if ($levelUser == 13) {
-	// 		$post->id_perawat = $this->session->all_userdata()['id'];
-	// 		$post->nama_perawat = $this->session->all_userdata()['name'];
-	// 	}
-
-	// 	$postmenu = $this->admission_model->get_menu($link);
-	// 	$judulRM = $postmenu->isi;
-	// 	$namaRM = $postmenu->rm;
-	// 	$linkRM = $postmenu->link;
-		
-	//     $pdf->AddPage();
-	// 	$pdf->SetFont('times', '', 11);
-
-	// 	// HEADER PDF
-	// 	// Matikan GAMBAR HEADER
-	// 	$pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
-	// 	$pdf->SetFont('times','B',16);
-	// 	$pdf->Cell(190,4,$site_title,0,1,'C');
-	// 	$pdf->SetFont('times','B',10);
-	// 	$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-	// 	$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-	// 	$pdf->Cell(10,4,'',0,1);
-	// 	$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-	// 	// FONT UTAMA
-	// 	$pdf->SetFont('times','',10);
-
-	// 	// LANJUT DESAIN PDF NYA DISINI>>>
-	// 	$html1 .= '
-	//     <h3 align="right">' . htmlspecialchars($namaRM) . '</h3>
-	//     <h2 align="center">' . htmlspecialchars($judulRM) . '</h2>
-
-	//     <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
-	//     	<tr>
-	//             <td width="50%"><b>No. RM : </b>' . htmlspecialchars($no_rm) . '</td>
-	//             <td width="50%"><b>Tanggal Lahir : </b>' . htmlspecialchars($tgl_lahir) . '</td>
-	            
-	//         </tr>
-	//         <tr>
-	//             <td width="50%"><b>Nama Pasien : </b>' . htmlspecialchars($nama_pasien) . '</td>
-	//             <td width="50%"><b>Jenis Kelamin : </b>' . htmlspecialchars($jenkel) . '</td>
-	            
-	//         </tr>
-	//         <tr>
-	//         	<td width="50%"><b>Ruangan : </b>' . htmlspecialchars($nama_ruangan) . '</td>
-	//         	<td width="50%"><b>Agama : </b>' . htmlspecialchars($nama_agama) . '</td>
-
-	//         </tr>
-	//         <tr>
-	//             <td width="50%"><b>Kelas : </b>' . htmlspecialchars($kelas) . '</td>
-	//             <td width="50%"><b>Suku : </b>' . htmlspecialchars($nama_suku) . '</td>
-	//         </tr>
-
-	//     </table>';
-
-	//     // Ambil data dari JSON
-	// 	$tanggal = $decodedData['tanggal'] ?? [];
-	// 	$jam = $decodedData['jam'] ?? [];
-	// 	$catatan_perawat = $decodedData['catatan_perawat'] ?? [];
-	// 	$dokter_umum = $decodedData['dokter_umum'] ?? [];
-	// 	$dokter_umum_nama = $decodedData['dokter_umum_nama'] ?? [];
-	// 	$dokter_umum_qr = $decodedData['dokter_umum_qr'] ?? [];
-
-	// 	// Buat tabel
-	// 	$html1 .= '
-	// 	<table border="1" cellpadding="5" cellspacing="0" width="100%">
-	// 	    <thead>
-	// 	        <tr>
-	// 	        	<th width="4%"><b>No</b></th>
-	// 	            <th width="10%"><b>Tanggal</b></th>
-	// 	            <th width="6%"><b>Jam</b></th>
-	// 	            <th width="40%"><b>Catatan</b></th>
-	// 	            <th width="20%"><b>Dokter Umum</b></th>
-	// 	            <th width="20%"><b>Tanda Tangan</b></th>
-	// 	        </tr>
-	// 	    </thead>
-	// 	    <tbody>';
-
-	// 	for ($i = 0; $i < count($tanggal); $i++) {
-	// 	    $tgl = htmlspecialchars(format_indo(date($tanggal[$i])));
-	// 	    $j = htmlspecialchars($jam[$i]);
-	// 	    $catatan = nl2br(htmlspecialchars($catatan_perawat[$i]));
-	// 	    $dokter = htmlspecialchars($dokter_umum_nama[$i]);
-	// 	    $qr = $dokter_umum_qr[$i];
-
-	// 	    // Jika QR tersedia, masukkan gambar QR
-	// 	    // if (!empty($qr)) {
-	// 	    //     $qrHtml = '<img src="' . BASE_STORAGE . '/pmo/qrcode/' . $qr . '" width="50">';
-	// 	    // } else {
-	// 	    //     $qrHtml = '-';
-	// 	    // }
-
-	// 	    $html1 .= '
-	// 	        <tr>
-		        
-	// 	        	<td width="4%">' . ($i + 1) . '</td>
-	// 	            <td width="10%">' . $tgl . '</td>
-	// 	            <td width="6%">' . $j . '</td>
-	// 	            <td width="40%">' . $catatan . '</td>
-	// 	            <td width="20%">' . $dokter . '</td>';
-
-	// 	        $dokters = $dokter;
-	// 	        $result_dokter = $this->data_klaim_model->get_karyawan_by_nama($dokters);
-	// 	        $path_ttd_server = 'C:/xampp/htdocs/pmo/images/pegawai/' . $result_dokter;
-	// 	        $path_ttd_url = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
-		        
-	// 	        $html1 .= '<td align="center" width="20%">';
-	// 	        if ($result_dokter && file_exists($path_ttd_server)) {
-	// 	            $html1 .= '<div align="center">
-	// 	                           <img src="' . $path_ttd_url . '" width="80" height="80" />
-	// 	                       </div>';
-	// 	        }
-	// 	        $html1 .= htmlspecialchars($dokter) . '</td>';
-	// 	        $html1 .= '</tr>';
-	// 	}
-
-	// 	$html1 .= '
-	// 	    </tbody>
-	// 	</table>';
-
-
-	//     // LANJUT DESAIN PDF NYA DISINI>>>
-	// 	$pdf->writeHTML($html1, true, false, true, false, '');
-	// }
-
-
-	public function _render_pdfrm12b($id_kunjungan, $pdf)
-	{
-	    // Ambil data unit
-	    $unit = $this->site_model->get_unit_data();
-	    $lokasi = $unit['alamat'] . ', Kelurahan ' . $unit['nama_kel'] . ', Kecamatan ' . $unit['nama_kec'] . ', ' . $unit['nama_kab'] . ', ' . $unit['nama_prov'];
-
-	    // Ambil data settings
-	    $getsettings = $this->site_model->get_settings_data();
-	    $site_title = $getsettings['nama'];
-	    $imagesrm16 = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-	    // Ambil data FORM RME
-	    $berkas_klaim = 'rm12b';
-	    $formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
-	    if (!$formData) return;
-
-	    $link = $formData->nama_berkas;
-	    $jsonRaw = $formData->data_json;
-	    $decodedData = json_decode($jsonRaw, true);
-
-	    // Ambil data kunjungan
-	    $get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-	    if ($get_id_konten->num_rows() > 0) {
-	        $admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
-
-	        if ($admission_id_kunjungan == NULL) {
-	            $post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-	            $no_bpjs = $post->no_bpjs;
-	            $nama_pasien = $post->nama_pasien;
-	            $nik = $post->nik;
-	            $pendidikan_terakhir = $post->pendidikan_terakhir;
-	            $nama_pekerjaan = $post->nama_pekerjaan;
-	            $no_rm = $post->no_rm;
-	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	            $nama_suku = $post->nama_suku;
-	            $umur = countumur($post->tanggal_lahir);
-	            $jenkel = $post->jenkel;
-	            $alamatt = $post->alamat;
-	            $nama_agama = $post->nama_agama;
-	            $no_hp = $post->no_handphone;
-	            $nama_jenis_pasien = $post->nama_jenis_pasien;
-	            $kelas = $post->klsrawat;
-	            $nama_poli = $post->nama_poli;
-	            $nama_dokter = $post->nama_dokter;
-	            $nama_ruangan = '-';
-	            $kelas = '-';
-	        } else {
-	            $post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-	            // $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-	            $nama_pasien = $post->nama_pasien;
-	            $nik = $post->nik;
-	            $pendidikan_terakhir = $post->pendidikan_terakhir;
-	            $nama_pekerjaan = $post->nama_pekerjaan;
-	            $no_rm = $post->no_rm;
-	            $tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-	            $umur = countumur($post->tanggal_lahir);
-	            $jenkel = $post->jenkel;
-	            $alamatt = $post->alamat;
-	            $nama_suku = $post->nama_suku;
-	            $nama_agama = $post->nama_agama;
-	            $no_hp = $post->no_handphone;
-	            $nama_poli = $post->nama_poli;
-	            $nama_dokter = $post->nama_dokter;
-	            $nama_ruangan = $post->nama_ruangan;
-	            $kelas = $post->klsrawat;
-	        }
-	    } else {
-	        redirect('backend/data_klaim');
-	    }
-
-	    // Simpan data perawat jika level 13
-	    $levelUser = $this->session->userdata('level');
-	    if ($levelUser == 13) {
-	        $post->id_perawat = $this->session->userdata('id');
-	        $post->nama_perawat = $this->session->userdata('name');
-	    }
-
-	    // Ambil data menu
-	    $postmenu = $this->admission_model->get_menu($link);
-	    $judulRM = $postmenu->isi;
-	    $namaRM = $postmenu->rm;
-
-	    $pdf->AddPage();
-	    $pdf->SetFont('times', '', 11);
-
-	    // Header PDF
-	    // HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($imagesrm16, 10,10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times','B',16);
-		$pdf->Cell(190,4,$site_title,0,1,'C');
-		$pdf->SetFont('times','B',10);
-		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-		$pdf->Cell(10,4,'',0,1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-
-	    // Konten PDF
-	    $pdf->SetFont('times','',10);
-
-	    $html16 = '
-	    <h3 align="right">' . $namaRM . '</h3>
-	    <h2 align="center">' . $judulRM . '</h2>
-
-	    <table cellpadding="5" cellspacing="0" width="100%">
-	        <tr>
-	            <td width="50%"><b>No. RM : </b>' . $no_rm . '</td>
-	            <td width="50%"><b>Tanggal Lahir : </b>' . $tgl_lahir . '</td>
-	        </tr>
-	        <tr>
-	            <td width="50%"><b>Nama Pasien : </b>' . $nama_pasien . '</td>
-	            <td width="50%"><b>Jenis Kelamin : </b>' . $jenkel . '</td>
-	        </tr>
-	        <tr>
-	            <td width="50%"><b>Ruangan : </b>' . $nama_ruangan . '</td>
-	            <td width="50%"><b>Kelas : </b>' . $kelas . '</td>
-	        </tr>
-	    </table><br/>';
-
-	    // Data JSON
-	    $tanggal = $decodedData['tanggal'] ?? [];
-	    $jam = $decodedData['jam'] ?? [];
-	    $catatan_perawat = $decodedData['catatan_perawat'] ?? [];
-	    $dokter_umum_nama = $decodedData['dokter_umum_nama'] ?? [];
-
-	    $html16 .= '
-	    <table border="1" cellpadding="5" cellspacing="0" width="100%">
-	        <tr>
-	            <th width="4%"><b>No</b></th>
-	            <th width="10%"><b>Tanggal</b></th>
-	            <th width="6%"><b>Jam</b></th>
-	            <th width="40%"><b>Catatan</b></th>
-	            <th width="20%"><b>Perawat</b></th>
-	            <th width="20%"><b>Tanda Tangan</b></th>
-	        </tr>';
-
-	    for ($i = 0; $i < count($tanggal); $i++) {
-	        $tgl = isset($tanggal[$i]) ? format_indo(date($tanggal[$i])) : '-';
-	        $j = $jam[$i] ?? '-';
-	        $catatan = nl2br($catatan_perawat[$i] ?? '-');
-	        $nama_perawat = $dokter_umum_nama[$i] ?? '-';
-
-	        // Ambil file tanda tangan
-	        // $filename_ttd = $this->data_klaim_model->get_karyawan_by_nama($nama_perawat);
-	        $filename_ttd = preg_replace('/[^A-Za-z0-9_.-]/', '_', $filename_ttd);
-
-	        $safe_filenameperawats = $this->to_safe_filename($nama_perawat) . '.jpg';
-			$path_ttd_serverperawats = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filenameperawats;
-			$path_ttd_urlperawats = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filenameperawats;
-
-
-	        $html16 .= '<tr>
-	            <td>' . ($i + 1) . '</td>
-	            <td>' . $tgl . '</td>
-	            <td>' . $j . '</td>
-	            <td>' . $catatan . '</td>
-	            <td>' . $nama_perawat . '</td>
-	            <td align="center">';
-
-	        if (file_exists($path_ttd_serverperawats)) {
-	            $html16 .= '<img src="' . $path_ttd_urlperawats . '" width="100" height="100" /><br/>' . $nama_perawat;
-	        } else {
-	            $html16 .= '-<br/>' . $nama_perawat;
-	        }
-
-	        $html16 .= '</td></tr>';
-	    }
-
-	    $html16 .= '</table>';
-
-	    // Tulis ke PDF
-	    $pdf->writeHTML($html16, true, false, true, false, '');
-	}
-	// RM 12b URUTAN 9
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// RM 12c URUTAN 10
-	public function _render_pdfrm12c($id_kunjungan, $pdf)
-	{
-	    // Ambil data unit
-		$unit = $this->site_model->get_unit_data();
-		$nama_prov = $unit['nama_prov'];
-		$nama_kab = $unit['nama_kab'];
-		$nama_kec = $unit['nama_kec'];
-		$nama_kel = $unit['nama_kel'];
-		$alamat = $unit['alamat'];
-		$city_sign = $unit['nama_kab'];
-		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-
-		// Ambil data settings
-		$getsettings = $this->site_model->get_settings_data();
-		$site_title = $getsettings['nama'];
-		$telepon = $getsettings['telepon'];
-		$email = $getsettings['email'];
-		$imagesrm12c = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-		// Ambil data FORM RME berdasarkan ID
-		$berkas_klaim = 'rm12c';
-		$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
-		if (!$formData) {
-            return;
-        }
-		$link = $formData->nama_berkas;
-		$jsonRaw = $formData->data_json;
-		$id_kunjungan = $formData->id_kunjungan;
-		$id_pasien_rme = $formData->id_pasien_rme;
-		$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-		$idBerkas = $decodedData['id'] ?? null;
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// BATAS AMBIL DATA
-		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-		if ($get_id_konten->num_rows() > 0) {
-			$id_poli = $get_id_konten->row()->id_poly;  
-			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
-			
-			if ($admission_id_kunjungan == NULL) {
-				// DATA DARI ANTRIAN
-				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-				$tgl_admit2 = date($post->waktu_masuk);
-				$tgl_admit = format_indo(date($post->waktu_masuk));
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$nama_suku = $post->nama_suku;
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$nama_poli = $post->nama_poli;
-				$nama_dokter = $post->nama_dokter;
-				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-				// DATA DARI ANTRIAN
-			} else {
-				// DATA DARI ADMISSION
-				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_suku = $post->nama_suku;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$tgl_admit2 = $post->tgl_admit;
-				$post->umur = countumur($post->tanggal_lahir);
-				$tgl_admit = format_indo(date($post->tgl_admit));
-				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-				$nama_lantai = $post->nama_lantai;
-				$nama_dokter = $post->nama_dokter;
-				$nama_poli = $post->nama_poli;
-				$nama_ruangan = $post->nama_ruangan;
-				$no_bad = $post->no_bad;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$kelas = $post->kelas;
-				$lama = countme($post->tgl_admit);
-				// DATA DARI ADMISSION
-			}
-		} else {
-			redirect('backend/data_klaim');
-		}
-		// BATAS AMBIL DATA
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		// Simpan data perawat jika user level 13
-		$levelUser = $this->session->all_userdata()['level'];
-		if ($levelUser == 13) {
-			$post->id_perawat = $this->session->all_userdata()['id'];
-			$post->nama_perawat = $this->session->all_userdata()['name'];
-		}
-
-		$postmenu = $this->admission_model->get_menu($link);
-		$judulRM = $postmenu->isi;
-		$namaRM = $postmenu->rm;
-		$linkRM = $postmenu->link;
-		
-	    $pdf->AddPage();
-		$pdf->SetFont('times', '', 11);
-
-		// HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($imagesrm12c, 10,10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times','B',16);
-		$pdf->Cell(190,4,$site_title,0,1,'C');
-		$pdf->SetFont('times','B',10);
-		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-		$pdf->Cell(10,4,'',0,1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-		// FONT UTAMA
-		$pdf->SetFont('times','',10);
-
-		// LANJUT DESAIN PDF NYA DISINI>>>
-		$html1 = '
-	    <h3 align="right">' . $namaRM . '</h3>
-	    <h2 align="center">' . $judulRM . '</h2>
-
-	    <table class="table-borderless" cellpadding="5" cellspacing="0" width="100%">
-	    	<tr>
-	    		<td width="50%"><b>Nama Pasien : </b>' . $nama_pasien . '</td>
-	    		<td width="50%"><b>Agama : </b>' . $nama_agama . '</td>
-	        </tr>
-	        <tr>
-	            <td width="50%"><b>Tanggal Lahir : </b>' . $tgl_lahir . '</td>
-	            <td width="50%"><b>Jenis Kelamin : </b>' . $jenkel . '</td>
-	            
-	        </tr>
-	        <tr>
-	        	<td width="50%"><b>No. RM : </b>' . $no_rm . '</td>
-	        	<td width="50%"><b>Suku : </b>' . $nama_suku . '</td>
-	        </tr>
-	    </table>';
-
-	    
-		// Hitung jumlah baris berdasarkan salah satu array, misalnya tanggal_pemeriksaan
-		$jumlah_baris = count($decodedData['tanggal_pemeriksaan']);
-
-		$html1 .= '
-		<table border="1" cellpadding="4" cellspacing="0" width="100%">
-			<thead>
-				<tr style="background-color:#fff;">
-					<th rowspan="3" align="center"><b>Tanggal/Jam</b></th>
-					<th colspan="6" align="center"><b>Intake Masuk</b></th>
-					<th colspan="3" align="center"><b>Output/Keluar</b></th>
-					<th rowspan="3" align="center"><b>Nama Perawat</b></th>
-				</tr>
-				<tr style="background-color:#fff;">
-					<th colspan="3" align="center"><b>INTRAVENUS</b></th>
-					<th colspan="3" align="center"><b>MULUT/NGT</b></th>
-					<th rowspan="2" align="center"><b>Urine</b></th>
-					<th rowspan="2" align="center"><b>BAB</b></th>
-					<th rowspan="2" align="center"><b>NGT</b></th>
-				</tr>
-				<tr style="background-color:#fff;">
-					<th align="center"><b>Jenis Cairan</b></th>
-					<th align="center"><b>Jumlah</b></th>
-					<th align="center"><b>Total</b></th>
-					<th align="center"><b>Jenis Makanan</b></th>
-					<th align="center"><b>Jumlah</b></th>
-					<th align="center"><b>Total</b></th>
-				</tr>
-			</thead>
-			<tbody>';
-
-		for ($i = 0; $i < $jumlah_baris; $i++) {
-			// Format tanggal
-			$tanggal_iso = $decodedData['tanggal_pemeriksaan'][$i];
-			$tanggal_obj = DateTime::createFromFormat('Y-m-d\TH:i', $tanggal_iso);
-			$tanggal_formatted = $tanggal_obj ? $tanggal_obj->format('d/m/Y H:i') : $tanggal_iso;
-
-			$html1 .= '<tr>
-				<td>' . htmlspecialchars($tanggal_formatted) . '</td>
-				<td>' . htmlspecialchars($decodedData['jenis_cairan'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['jumlah'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['total'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['jenis_makanan'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['jumlah_makanan'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['total_makanan'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['urine'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['bab'][$i]) . '</td>
-				<td>' . htmlspecialchars($decodedData['ngt'][$i]) . '</td>
-				<td>';
-
-			if ($i == 0) {
-				// Baris pertama tampilkan perawat pengkaji (tanpa QR)
-				$html1 .= htmlspecialchars($decodedData['perawat_pengkaji']);
-			} else {
-				// Baris ke-2 dan seterusnya: dokter_pe[$i-1]
-				$dokter_nama = isset($decodedData['dokter_pe'][$i - 1]) ? $decodedData['dokter_pe'][$i - 1] : '-';
-				$safe_filename = $this->to_safe_filename($dokter_nama) . '.jpg';
-				$path_server = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $safe_filename;
-				$path_url = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $safe_filename;
-
-				if (file_exists($path_server)) {
-					$html1 .= '<img src="' . $path_url . '" width="40" height="40" /><br>';
-				}
-
-				$html1 .= htmlspecialchars($dokter_nama);
-			}
-
-			$html1 .= '</td></tr>';
-		}
-
-		$html1 .= '</tbody></table>';
-
-
-
-	    // LANJUT DESAIN PDF NYA DISINI>>>
-		$pdf->writeHTML($html1, true, false, true, false, '');
-	}
-	// RM 12c URUTAN 10
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// RM 28 URUTAN 11
-	public function _render_pdfrm28($id_kunjungan, $pdf)
-	{
-	    // Ambil data unit
-		$unit = $this->site_model->get_unit_data();
-		$nama_prov = $unit['nama_prov'];
-		$nama_kab = $unit['nama_kab'];
-		$nama_kec = $unit['nama_kec'];
-		$nama_kel = $unit['nama_kel'];
-		$alamat = $unit['alamat'];
-		$city_sign = $unit['nama_kab'];
-		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-
-		// Ambil data settings
-		$getsettings = $this->site_model->get_settings_data();
-		$site_title = $getsettings['nama'];
-		$telepon = $getsettings['telepon'];
-		$email = $getsettings['email'];
-		$images = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-		// Ambil data FORM RME berdasarkan ID
-		$berkas_klaim = 'rm28';
-		$formData = $this->data_klaim_model->get_by_id($id_kunjungan,$berkas_klaim);
-		if (!$formData) {
-            return;
-        }
-		$link = $formData->nama_berkas;
-		$jsonRaw = $formData->data_json;
-		$id_kunjungan = $formData->id_kunjungan;
-		$id_pasien_rme = $formData->id_pasien_rme;
-		$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-		$idBerkas = $decodedData['id'] ?? null;
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// BATAS AMBIL DATA
-		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-		if ($get_id_konten->num_rows() > 0) {
-			$id_poli = $get_id_konten->row()->id_poly;  
-			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;  
-			
-			if ($admission_id_kunjungan == NULL) {
-				// DATA DARI ANTRIAN
-				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-				$tgl_admit2 = date($post->waktu_masuk);
-				$tgl_admit = format_indo(date($post->waktu_masuk));
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$nama_suku = $post->nama_suku;
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$nama_poli = $post->nama_poli;
-				$nama_dokter = $post->nama_dokter;
-				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-				// DATA DARI ANTRIAN
-			} else {
-				// DATA DARI ADMISSION
-				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-				$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_suku = $post->nama_suku;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$tgl_admit2 = $post->tgl_admit;
-				$post->umur = countumur($post->tanggal_lahir);
-				$tgl_admit = format_indo(date($post->tgl_admit));
-				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-				$nama_lantai = $post->nama_lantai;
-				$nama_dokter = $post->nama_dokter;
-				$nama_poli = $post->nama_poli;
-				$nama_ruangan = $post->nama_ruangan;
-				$no_bad = $post->no_bad;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$kelas = $post->kelas;
-				$lama = countme($post->tgl_admit);
-				// DATA DARI ADMISSION
-			}
-		} else {
-			redirect('backend/data_klaim');
-		}
-		// BATAS AMBIL DATA
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		// Simpan data perawat jika user level 13
-		$levelUser = $this->session->all_userdata()['level'];
-		if ($levelUser == 13) {
-			$post->id_perawat = $this->session->all_userdata()['id'];
-			$post->nama_perawat = $this->session->all_userdata()['name'];
-		}
-
-		$postmenu = $this->admission_model->get_menu($link);
-		$judulRM = $postmenu->isi;
-		$namaRM = $postmenu->rm;
-		$linkRM = $postmenu->link;
-		
-	    $pdf->AddPage();
-		$pdf->SetFont('times', '', 11);
-
-		// HEADER PDF
-		// Matikan GAMBAR HEADER
-		// $pdf->Image($images, 10,10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times','B',16);
-		$pdf->Cell(190,4,$site_title,0,1,'C');
-		$pdf->SetFont('times','B',10);
-		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 5, $lokasi."\n", 0, 'C', 0, 1, '' ,'', true);
-		$pdf->Cell(10,4,'',0,1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-		// FONT UTAMA
-		$pdf->SetFont('times','',10);
-
-		// LANJUT DESAIN PDF NYA DISINI>>>
-		$html1 .= '
-	    <h3 align="right">' . $namaRM . '</h3>
-	    <h2 align="center">' . $judulRM . '</h2>
-
-	    ';
-
-
-	    // LANJUT DESAIN PDF NYA DISINI>>>
-		$pdf->writeHTML($html1, true, false, true, false, '');
-	}
-	// RM 12c URUTAN 11
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	// ============== RM18 E Laporan operasi ========================= //
-	// ============================================================== //
-
-	public function _render_pdfrm18e($id_kunjungan, $pdf)
-	{
-		// Ambil data unit
-		$unit = $this->site_model->get_unit_data();
-		$nama_prov = $unit['nama_prov'];
-		$nama_kab = $unit['nama_kab'];
-		$nama_kec = $unit['nama_kec'];
-		$nama_kel = $unit['nama_kel'];
-		$alamat = $unit['alamat'];
-		$city_sign = $unit['nama_kab'];
-		$lokasi = $alamat . ', Kelurahan ' . $nama_kel . ', Kecamatan ' . $nama_kec . ', ' . $nama_kab . ', ' . $nama_prov;
-		// Ambil data settings
-		$getsettings = $this->site_model->get_settings_data();
-		$site_title = $getsettings['nama'];
-		$telepon = $getsettings['telepon'];
-		$email = $getsettings['email'];
-		$imagesrm18e = BASE_STORAGE . '/pmo/images/' . $getsettings['logo'];
-
-		// Ambil data FORM RME berdasarkan ID
-		$berkas_klaim = 'rm18e';
-		$formData = $this->data_klaim_model->get_by_id($id_kunjungan, $berkas_klaim);
-		if (!$formData) {
-			return;
-		}
-		$link = $formData->nama_berkas;
-		$jsonRaw = $formData->data_json;
-		$id_kunjungan = $formData->id_kunjungan;
-		$id_pasien_rme = $formData->id_pasien_rme;
-		$decodedData = json_decode($jsonRaw, true); // JSON ke array
-
-		$idBerkas = $decodedData['id'] ?? null;
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// BATAS AMBIL DATA
-		$get_id_konten = $this->data_klaim_model->get_data_dari($id_kunjungan);
-		if ($get_id_konten->num_rows() > 0) {
-			$id_poli = $get_id_konten->row()->id_poly;
-			$admission_id_kunjungan = $get_id_konten->row()->admission_id_kunjungan;
-
-			if ($admission_id_kunjungan == NULL) {
-				// DATA DARI ANTRIAN
-				$post = $this->data_klaim_model->get_data_darirj($id_kunjungan);
-				$tgl_admit2 = date($post->waktu_masuk);
-				$tgl_admit = format_indo(date($post->waktu_masuk));
-				$nama_pasien = $post->nama_pasien;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$nama_poli = $post->nama_poli;
-				$nama_dokter = $post->nama_dokter;
-				$tgl_discharge = $post->waktu_keluar ? format_indo(date($post->waktu_keluar)) : "";
-				// DATA DARI ANTRIAN
-			} else {
-				// DATA DARI ADMISSION
-				$post = $this->data_klaim_model->get_data_dariri($id_kunjungan);
-				// $post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
-				$nama_pasien = $post->nama_pasien;
-				$no_bpjs = $post->no_bpjs;
-				$nik = $post->nik;
-				$pendidikan_terakhir = $post->pendidikan_terakhir;
-				$nama_pekerjaan = $post->nama_pekerjaan;
-				$no_rm = $post->no_rm;
-				$tgl_lahir = date('d / m / Y', strtotime($post->tanggal_lahir));
-				$umur = countumur($post->tanggal_lahir);
-				$jenkel = $post->jenkel;
-				$alamatt = $post->alamat;
-				$nama_agama = $post->nama_agama;
-				$no_hp = $post->no_handphone;
-				$tgl_admit2 = $post->tgl_admit;
-				$post->umur = countumur($post->tanggal_lahir);
-				$tgl_admit = format_indo(date($post->tgl_admit));
-				$tgl_discharge = $post->tgl_discharge ? format_indo(date($post->tgl_discharge)) : "";
-				$nama_lantai = $post->nama_lantai;
-				$nama_dokter = $post->nama_dokter;
-				$nama_poli = $post->nama_poli;
-				$nama_ruangan = $post->nama_ruangan;
-				$no_bad = $post->no_bad;
-				$nama_jenis_pasien = $post->nama_jenis_pasien;
-				$kelas = $post->kelas;
-				$nama_hub_pasien = $post->nama_hub_pasien;
-				$alamat_hub_pasien = $post->alamat_hub_pasien;
-				$noHp_hub_pasien = $post->noHp_hub_pasien;
-				$nama_bangsa = $post->nama_bangsa;
-				$hubungan_keluarga_pasien = $post->hubungan_keluarga_pasien;
-				$status_nikah = $post->status_nikah;
-				$nama_suku = $post->nama_suku;
-				$lama = countme($post->tgl_admit);
-				// DATA DARI ADMISSION
-			}
-		} else {
-			redirect('backend/data_klaim');
-		}
-		// BATAS AMBIL DATA
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-		// Simpan data perawat jika user level 13
-		$levelUser = $this->session->all_userdata()['level'];
-		if ($levelUser == 13) {
-			$post->id_perawat = $this->session->all_userdata()['id'];
-			$post->nama_perawat = $this->session->all_userdata()['name'];
-		}
-
-		$postmenu = $this->admission_model->get_menu($link);
-		$judulRM = $postmenu->isi;
-		$namaRM = $postmenu->rm;
-		$linkRM = $postmenu->link;
-
-
-		// $imagesttd = BASE_STORAGE . '/pmo/images/pegawai/' . $result_dokter;
-		// $imagesttdrm025 = FCPATH . 'assets/images/logo/787205dc7cf0a063e492c50da0b885a4.jpg';
-
-		// ... Inisialisasi PDF seperti sebelumnya
-
-		$pdf->AddPage();
-		$pdf->SetFont('times', '', 11);
-
-		// HEADER PDF
-		// Matikan GAMBAR HEADER
-		$pdf->Image($imagesrm18e, 10, 10, 20, 20, '', '', 1, 0);
-		$pdf->SetFont('times', 'B', 16);
-		$pdf->Cell(190, 4, $site_title, 0, 1, 'C');
-		$pdf->SetFont('times', 'B', 10);
-		$pdf->MultiCell(45, 5, '', 0, 'C', 0, 0, '', '', true);
-		$pdf->MultiCell(100, 5, $lokasi . "\n", 0, 'C', 0, 1, '', '', true);
-		$pdf->Cell(10, 4, '', 0, 1);
-		$pdf->writeHTML("<hr>", true, false, false, false, '');
-
-		// FONT UTAMA
-		$pdf->SetFont('times', '', 11);
-
-
-
-		// =================== HALAMAN PERTAMA ====================
-		function checkboxrm18e($value, $label = '')
-		{
-			return (!empty($value) && $value !== '0') ? '[v] ' . $label : '[ ] ' . $label;
-		}
-
-		function valueOrDashrm18e($field)
-		{
-			return isset($field) ? htmlspecialchars($field) : '-';
-		}
-
-		$html1 = '
-		<h3 align="right">' . htmlspecialchars($namaRM) . '</h3>
-
-			<table border="1" style="border-collapse: collapse;">
-				<tr>
-					<td align="center" valign="middle" height="100" width="50%"><br><br><br><b>' . htmlspecialchars($judulRM) . '</b></td>
-					<td width="50%">
-						<table style="border-collapse: collapse;">
-							<tr>
-								<td width="30%">
-									No.rm<br>
-									Nama<br>
-									Tanggal Lahir<br>
-									Umur<br>
-									Jenis Kelamin
-								</td>
-								<td width="70%">
-								: ' . $no_rm . '<br>
-								: ' . $nama_pasien . '<br>
-								: ' . $tgl_lahir . '<br>
-								: ' . $umur . '<br>
-								: ' . $jenkel . '<br>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-		</table>
-		';
-
-		$html1 .= '
-			<table border="1" style="border-collapse:collapse;" cellpadding="3">
-				<tr>
-					<td width="35%">
-						Nama Ahli Bedah :<br>
-						' . $decodedData['dokter_umum1'] . '
-					</td>
-					<td width="35%">
-						Nama Asistant :<br>
-						' . $decodedData['nama_asistant'] . '
-					</td>
-					<td width="30%">
-						Nama Perawat :<br>
-						' . $decodedData['nama_perawat'] . '
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						Nama Ahli Anasthesi :<br>
-						' . $decodedData['dokter_umum2'] . '
-					</td>
-					<td colspan="3">
-						Jenis Anasthesi<br>
-						' . $decodedData['jenis_anesthesi'] . '
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">
-						Diagnosa Pre- Operatif :<br>
-						' . $decodedData['diagnosa'] . '
-					</td>
-					<td>
-						Macam Pembedahan <br>
-						<table cellpadding="4">
-							<tr>
-								<td width="37%">
-									' . checkboxrm18e($decodedData['bedah_besar']) . ' Besar
-								</td>
-								<td>
-									' . checkboxrm18e($decodedData['bedah_elective']) . ' Elective
-								</td>
-							</tr>
-							<tr>
-								<td width="37%">
-									' . checkboxrm18e($decodedData['bedah_sedang']) . ' Sedang
-								</td>
-								<td>
-									' . checkboxrm18e($decodedData['bedah_emergency']) . ' Emergency
-								</td>
-							</tr>
-							<tr>
-								<td width="37%">
-									' . checkboxrm18e($decodedData['bedah_kecil']) . ' Kecil
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="2">Diagnosis post operatif : ' . $decodedData['diagnosa2'] . '</td>
-					<td>
-						<table cellpadding="4">
-							<tr>
-								<td width="37%">
-									' . checkboxrm18e($decodedData['ya_post']) . ' Ya
-								</td>
-								<td>
-									' . checkboxrm18e($decodedData['tidak_post']) . ' Tidak
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="3">
-						Jaringan yang di – Eksisi / Insisi : <br>
-						' . $decodedData['jaringan_eksisis'] . '
-					</td>
-				</tr>
-				<tr>
-					<td colspan="3">
-						Nama / Macam Operasi<br>
-						' . $decodedData['macam_operasi_eksisi'] . '
-					</td>
-				</tr>
-				<tr>
-					<td colspan="3">
-						<table cellpadding="2">
-							<tr>
-					<td>
-						Tanggal Operasi : <br>
-						' . $decodedData['tanggal_operasi'] . '
-					</td>
-					<td>
-						Jam Operasi Dimulai : <br>
-						' . $decodedData['jam_operasi_dimulai'] . '
-					</td>
-					<td>
-						Jam Operasi Selesai : <br>
-						' . $decodedData['jam_operasi_selesai'] . '
-					</td>
-					<td>
-						Lama Operasi  Berlangsung :<br>
-						' . $decodedData['lama_operasi_berlangusung'] . '
-					</td>
-				</tr>
-						</table>
-					</td>
-				</tr>
-				<tr>
-					<td colspan="3">
-					Laporan<br>
-						<table border="1" cellpadding="3">
-							<tr>
-								<td>' . $decodedData['laporan'] . '<br><br><br><br></td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</table>
-		';
-
-		$QRDokterUmumrm18e = $decodedData["dokter_umum"];
-		$DokterUmumrm18e = $this->to_safe_filename($QRDokterUmumrm18e) . '.jpg';
-		$path_ttd_server_DokterUmumrm18e = 'C:/xampp/htdocs/pmo/images/qrcodeIT/' . $DokterUmumrm18e;
-		$path_ttd_url_DokterUmumrm18e = BASE_STORAGE . '/pmo/images/qrcodeIT/' . $DokterUmumrm18e;
-
-		// Awal HTML
-		// Cek jika path valid dan file ada
-		$html1 .= '
-		<br>
-		<div align="right">
-				Dokter Penanggung Jawab Pasien, <br>
-		<img src="' . $path_ttd_server_DokterUmumrm18e . '" width="80" height="80" /><br>
-		' . $decodedData['dokter_umum'] . '
-		</div>
-		';
-
-		$pdf->writeHTML($html1, true, false, true, false, '');
-	}
-
-
-	// ============== RM18 E Laporan operasi ====================== //
-	// ============================================================== //
 }	

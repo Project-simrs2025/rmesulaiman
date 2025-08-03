@@ -160,7 +160,9 @@
                     </tr>
                     <tr>
                         <td>Nama Pasien</td>
-                        <td><input type="text" name="nama_pasien_dirawat[]" class="form-control border-dark" value="<?= $nama_pasien ?>"></td>
+                        <td>
+							<textarea name="nama_pasien_dirawat[]" class="form-control border-dark"><?= $nama_pasien ?></textarea>
+						</td>
                         <td><input type="text" name="umur_pasien_dirawat[]" class="form-control border-dark" value="<?= $umur ?>"></td>
                         <td><input type="text" name="jenkel_pasien_dirawat[]" class="form-control border-dark" value="<?= $jenkel ?>"></td>
                         <td><input type="text" name="ruangan_pasien_dirawat[]" class="form-control border-dark"></td>
@@ -460,7 +462,7 @@
 
 			// Row 2
 			rows[0].querySelector('input[name="tanggal_mulai[]"]').value = TanggalMulai;
-			rows[0].querySelector('input[name="nama_pasien_dirawat[]"]').value = NamaPasienDirawat;
+			rows[0].querySelector('textarea[name="nama_pasien_dirawat[]"]').value = NamaPasienDirawat;
 			rows[0].querySelector('input[name="umur_pasien_dirawat[]"]').value = UmurPasienDirawat;
 			rows[0].querySelector('input[name="jenkel_pasien_dirawat[]"]').value = JenkelPasienDirawat;
 			rows[0].querySelector('input[name="ruangan_pasien_dirawat[]"]').value = RuanganPasienDirawat;
@@ -658,4 +660,17 @@
 			}
 		}
 	});
+
+	document.addEventListener('keydown', function (event) {
+	if (event.key === 'Enter') {
+		const isTextarea = event.target.tagName === 'TEXTAREA';
+		const isSelect = event.target.classList.contains('select2-search__field');
+
+		if (!isTextarea && !isSelect) {
+			event.preventDefault(); // Mencegah form tersubmit
+			return false;
+		}
+	}
+});
+
 </script>

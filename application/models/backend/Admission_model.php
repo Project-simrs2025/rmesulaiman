@@ -56,8 +56,8 @@ class Admission_model extends CI_Model
 		$this->postgres->from('icd10new');
 
 		if (!empty($searchQuery)) {
-			$this->postgres->where('LOWER(nama) LIKE', '%' . strtolower($searchQuery) . '%');
-			$this->postgres->or_where('LOWER(code) LIKE', '%' . strtolower($searchQuery) . '%');
+			$this->postgres->where("nama ILIKE", '%' . $searchQuery . '%');
+			$this->postgres->or_where("code ILIKE", '%' . $searchQuery . '%');
 		}
 
 		$this->postgres->order_by('id', 'ASC');
@@ -84,8 +84,8 @@ class Admission_model extends CI_Model
 		$this->postgres->from('icd9cm');
 
 		if (!empty($searchQuery)) {
-			$this->postgres->where('LOWER(nama) LIKE', '%' . strtolower($searchQuery) . '%');
-			$this->postgres->or_where('LOWER(code) LIKE', '%' . strtolower($searchQuery) . '%');
+			$this->postgres->where("nama ILIKE", '%' . $searchQuery . '%');
+			$this->postgres->or_where("code ILIKE", '%' . $searchQuery . '%');
 		}
 
 		$this->postgres->order_by('id', 'ASC');
@@ -99,7 +99,7 @@ class Admission_model extends CI_Model
 		$this->postgres->from('icd9cm');
 
 		if (!empty($searchQuery)) {
-			$this->postgres->like('nama', $searchQuery); // Search by 'nama' column
+			$this->postgres->where("nama ILIKE", '%' . $searchQuery . '%');
 		}
 
 		return $this->postgres->count_all_results();
@@ -115,8 +115,8 @@ class Admission_model extends CI_Model
 		$this->postgres->from('master_poly');
 
 		if (!empty($searchQuery)) {
-			$this->postgres->where('LOWER(name) LIKE', '%' . strtolower($searchQuery) . '%');
-			$this->postgres->or_where('LOWER(code) LIKE', '%' . strtolower($searchQuery) . '%');
+			$this->postgres->where("nama ILIKE", '%' . $searchQuery . '%');
+			$this->postgres->or_where("code ILIKE", '%' . $searchQuery . '%');
 		}
 
 		$this->postgres->order_by('id', 'ASC');
@@ -130,7 +130,7 @@ class Admission_model extends CI_Model
 		$this->postgres->from('master_poly');
 
 		if (!empty($searchQuery)) {
-			$this->postgres->like('name', $searchQuery); // Search by 'nama' column
+			$this->postgres->where("nama ILIKE", '%' . $searchQuery . '%');
 		}
 
 		return $this->postgres->count_all_results();
@@ -144,7 +144,7 @@ class Admission_model extends CI_Model
 		$this->postgres->from('tbl_ruangan');
 
 		if (!empty($searchQuery)) {
-			$this->postgres->where('LOWER(nama_ruangan) LIKE', '%' . strtolower($searchQuery) . '%');
+			$this->postgres->where("nama_ruangan ILIKE", '%' . $searchQuery . '%');
 		}
 
 		$this->postgres->order_by('id_ruangan', 'ASC');
@@ -158,7 +158,7 @@ class Admission_model extends CI_Model
 		$this->postgres->from('tbl_ruangan');
 
 		if (!empty($searchQuery)) {
-			$this->postgres->like('nama_ruangan', $searchQuery); // Search by 'nama' column
+			$this->postgres->where("nama_ruangan ILIKE", '%' . $searchQuery . '%');
 		}
 
 		return $this->postgres->count_all_results();

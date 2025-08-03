@@ -96,15 +96,15 @@
                 <td colspan="3">
                     <div class="d-flex align-items-center gap-4">
                         <div class="d-flex align-items-center gap-2">
-                            <input type="radio" class="custom-checkbox-success" value="normal_normal" id="normal_normal" name="normal"><label for="normal_normal">Normal</label>
+                            <input type="checkbox" class="custom-checkbox-success" value="normal_normal" id="normal_normal" name="normal"><label for="normal_normal">Normal</label>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <input type="radio" class="custom-checkbox-success" value="buka_mulut" id="buka_mulut" name="buka_mulut"><label for="buka_mulut">Buka mulut > 2 jari<br>Jarak Thyromental > 3 jari<br> Mallampati I / II<br> Gerakan Leher Maksimal</label>
+                            <input type="checkbox" class="custom-checkbox-success" value="buka_mulut" id="buka_mulut" name="buka_mulut"><label for="buka_mulut">Buka mulut > 2 jari<br>Jarak Thyromental > 3 jari<br> Mallampati I / II<br> Gerakan Leher Maksimal</label>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <input type="radio" class="custom-checkbox-success" value="abnormal" id="abnormal" name="abnormal"><label for="abnormal">Abnormal</label>
+                            <input type="checkbox" class="custom-checkbox-success" value="abnormal" id="abnormal" name="abnormal"><label for="abnormal">Abnormal</label>
                         </div>
                 </td>
 

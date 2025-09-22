@@ -1,60 +1,65 @@
+# System files
 .DS_Store
 
+# Cache
 application/cache/*
 !application/cache/index.html
 
+# Logs
 application/logs/*
 !application/logs/index.html
 
+# Tambahan log untuk folder lain
+application(B)/logs/*
+application2/logs/*
+/application*/logs/*
+!application*/logs/index.html
+
+# Jangan commit file index dummy
+index2.html
+
+# Protect .htaccess
 !application/*/.htaccess
 
+# Composer & test DB
 composer.lock
 tests/mocks/database/ci_test.sqlite
 
+# User guide build files
 user_guide_src/build/*
 user_guide_src/cilexer/build/*
 user_guide_src/cilexer/dist/*
 user_guide_src/cilexer/pycilexer.egg-info/*
+
+# Vendor
 /vendor/
 
-# ignore log files
-application(B)/logs/*
-application2/logs/*
-
-
-# Abaikan semua log
-/application*/logs/*
-!application*/logs/index.html
-
-
-# IDE Files
-#-------------------------
+# IDE files
 /nbproject/
 .idea/*
 
-## Sublime Text cache files
+# Sublime Text cache
 *.tmlanguage.cache
 *.tmPreferences.cache
 *.stTheme.cache
 *.sublime-workspace
 *.sublime-project
+
+# Tests
 /tests/tests/
 /tests/results/
 
+# Assets - ignore all except specific logo/icons
 assets2/rme/img/*
 !assets2/rme/img/*.svg
 !assets2/rme/img/*.jpg
 !assets2/rme/img/*.jpeg
 !assets2/rme/img/*.gif
 
-
-# Abaikan semua PNG di assets dan assets2
+# Ignore all PNGs
 /assets/**/*.png
 /assets2/**/*.png
 
-# Tapi tetap simpan logo/icon PNG penting
+# Keep only logo/icon PNGs
 !assets/images/logo*.png
 !assets2/images/logo*.png
-
-
-index2.html

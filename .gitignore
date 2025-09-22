@@ -17,6 +17,16 @@ user_guide_src/cilexer/dist/*
 user_guide_src/cilexer/pycilexer.egg-info/*
 /vendor/
 
+# ignore log files
+application(B)/logs/*
+application2/logs/*
+
+
+# Abaikan semua log
+/application*/logs/*
+!application*/logs/index.html
+
+
 # IDE Files
 #-------------------------
 /nbproject/

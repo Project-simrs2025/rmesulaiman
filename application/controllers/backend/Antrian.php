@@ -271,6 +271,7 @@ class Antrian extends CI_Controller
 		if ($admission_id_kunjungan == NULL) {
 			$post = $this->antrian_model->get_edit_data($id_kunjungan);
 			$data['id_pasien'] = $post->id_pasien;
+			$id_pasien = $post->id_pasien; // PEMBAHARUAN 21-09-2025
 			$data['nama_pasien'] = $post->nama_pasien;
 			$data['nik'] = $post->nik;
 			$linkpath = $site['linkpath'];
@@ -294,8 +295,8 @@ class Antrian extends CI_Controller
 		} else {
 			// DATA DARI ADMISSION
 			$post = $this->antrian_model->get_data_dariri($id_kunjungan);
-			$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
 			$data['id_pasien'] = $post->id_pasien;
+			$id_pasien = $post->id_pasien; // PEMBAHARUAN 21-09-2025
 			$data['nama_pasien'] = $post->nama_pasien;
 			$data['nik'] = $post->nik;
 			$data['pendidikan_terakhir'] = $post->pendidikan_terakhir;
@@ -339,6 +340,11 @@ class Antrian extends CI_Controller
 
 			//================ Data hidden dari model ======================//
 		}
+
+		/// LINK DIAGNOSA ///
+		$diagnosa_masuk = $this->antrian_model->get_diagnosa_masuk($id_pasien, $id_kunjungan);
+		$data['diagnosa_masuk'] = $diagnosa_masuk;
+		/// LINK DIAGNOSA ///
 
 
 		$levelUser = $this->session->all_userdata()['level'];
@@ -447,7 +453,6 @@ class Antrian extends CI_Controller
 		} else {
 			// DATA DARI ADMISSION
 			$post = $this->antrian_model->get_data_dariri($id_kunjungan);
-			$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
 			$data['id_pasien'] = $post->id_pasien;
 			$data['nama_pasien'] = $post->nama_pasien;
 			$data['nik'] = $post->nik;
@@ -812,6 +817,7 @@ class Antrian extends CI_Controller
 		if ($admission_id_kunjungan == NULL) {
 			$post = $this->antrian_model->get_edit_data($id_kunjungan);
 			$data['id_pasien'] = $post->id_pasien;
+			$id_pasien = $post->id_pasien;
 			$data['nama_pasien'] = $post->nama_pasien;
 			$data['nik'] = $post->nik;
 			$linkpath = $site['linkpath'];
@@ -835,8 +841,8 @@ class Antrian extends CI_Controller
 		} else {
 			// DATA DARI ADMISSION
 			$post = $this->antrian_model->get_data_dariri($id_kunjungan);
-			$post->jenkel = ($post->jenkel == 2) ? 'Perempuan' : 'Laki-laki';
 			$data['id_pasien'] = $post->id_pasien;
+			$id_pasien = $post->id_pasien;
 			$data['nama_pasien'] = $post->nama_pasien;
 			$data['nik'] = $post->nik;
 			$data['pendidikan_terakhir'] = $post->pendidikan_terakhir;
@@ -879,6 +885,10 @@ class Antrian extends CI_Controller
 			// DATA DARI ADMISSION
 		}
 
+		/// LINK DIAGNOSA ///
+		$diagnosa_masuk = $this->antrian_model->get_diagnosa_masuk($id_pasien, $id_kunjungan);
+		$data['diagnosa_masuk'] = $diagnosa_masuk;
+		/// LINK DIAGNOSA ///
 
 		// PROSES JSON formData SECARA AMAN
 		$temp = json_decode($data['formData'], true);
@@ -1042,7 +1052,7 @@ class Antrian extends CI_Controller
 		$items = array_map(function ($item) {
 			return [
 				'id_original' => $item->id,
-				'id' => $item->nama,
+				'id' => $item->id,
 				'text' => $item->nama,
 				'qr' => $item->path_ttd
 			];

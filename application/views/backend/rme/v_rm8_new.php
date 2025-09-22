@@ -13,11 +13,11 @@
             <div class="d-flex align-items-center">
                 <div class="col-6">
                     <label for="" class="flex-shrink-0">Dirawat Di :</label>
-                    <input type="text" class="form-control border-dark border-dark" name="rawat" value="<?= $nama_ruangan; ?>">
+                    <input type="text" class="form-control border-dark border-dark" name="rawat" value="<?= $nama_ruangan; ?>" disabled>
                 </div>
                 <div class="col-6 ms-2">
                     <label for="" class="flex-shrink-0">Kelas :</label>
-                    <input type="text" class="form-control border-dark border-dark" value="<?= $kelas; ?>" name="kelas_rawat">
+                    <input type="text" class="form-control border-dark border-dark" value="<?= $kelas; ?>" name="kelas_rawat" disabled>
                 </div>
             </div>
         </div>
@@ -112,8 +112,12 @@
                 <tr>
                     <td>1</td>
                     <td>
-                        <input type="datetime-local" class="form-control border-dark" name="tanggal_pemeriksaan[]">
+                        <input type="date" class="form-control border-dark flatpickr-no-config"
+                            name="tanggal_pemeriksaan[]">
                     </td>
+
+
+
 
                     <td>
                         <select type="select" name="perawat_pengkaji" id="perawat_pengkaji" class="form-select perawat" style="width: 250px;"></select>
@@ -148,6 +152,11 @@
 
 
 <script>
+    flatpickr('.flatpickr-no-config', {
+        enableTime: false,
+        dateFormat: 'd-m-Y',
+    });
+
     const mode = "<?= $mode; ?>"
     let dataListPerawat = []
     let dataDokter = []
@@ -339,17 +348,29 @@
         }
     }
 
+    function getToday() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+
     function tambahBaris() {
         let tbody = document.getElementById("VisiteProgramTable");
         let newRow = document.createElement("tbody");
 
+        const today = getToday();
 
 
         newRow.innerHTML = `
             <td>${counter + 1}</td>
-            <td>
-                 <input type="datetime-local" class="form-control border-dark" name="tanggal_pemeriksaan[]">
-            </td>
+             <td>
+            <input type="date" class="form-control border-dark flatpickr-no-config"
+                   name="tanggal_pemeriksaan[]">
+        </td>
+
             <td>
                 <select name="perawat_pe[]" id="perawat_pengkaji_1_${counter}" class="form-select perawat" style="width: 250px;"></select>
             </td>
@@ -407,14 +428,41 @@
         });
 
 
+        // Sanitize semua input/textarea real-time di row baru
+        const inputs = newRow.querySelectorAll('input[type="text"], textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', function () {
+                const original = this.value;
+                const sanitized = sanitizeInput(original);
+                if (original !== sanitized) {
+                    this.value = sanitized;
+                }
+            });
+        });
 
         // Daftarkan event handler dinamis sesuai counter
-        registerPerawatSelectHandlers(counter);
+        registerPerawatSelectHandlersOne(counter);
+
+        // ✅ Inisialisasi Flatpickr untuk input baru
+        flatpickr(newRow.querySelector('.flatpickr-no-config'), {
+            enableTime: false,
+            dateFormat: 'd-m-Y',
+        });
 
         counter++;
         callMarkerManager(); // update tanda tangan
     }
 
+
+    function sanitizeInput(text) {
+    return text
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t')
+        .replace(/\\\//g, '/')
+        .replace(/\\u2013/g, '–')
+        .replace(/[<>]/g, '') // Buang karakter < dan >
+        .replace(/[^\w\s.,()*%\/+=:\-\n\t]/g, ''); // Hapus simbol aneh lainnya
+    }
 
 
     // function hapusBaris(button) {
@@ -522,6 +570,7 @@
 
 
         // Daftarkan event handler dinamis sesuai jumlah baris
-        registerPerawatSelectHandlers(maxLength);
+        registerPerawatSelectHandlersOne(maxLength);
+
     }
 </script>

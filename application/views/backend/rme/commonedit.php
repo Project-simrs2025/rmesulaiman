@@ -250,6 +250,18 @@
 
 	function onSubmit(event, mode = 'edit') {
 		event.preventDefault();
+		// ZIKRY 21-09-2025 CEK KONEKSI JARINGAN
+		// CEK KONEKSI INTERNET
+		if (!navigator.onLine) {
+			Swal.fire({
+				icon: 'error',
+				title: 'Tidak ada koneksi!',
+				text: 'Pastikan perangkat terhubung ke jaringan sebelum menyimpan data.',
+				showConfirmButton: true,
+			});
+			return; // stop proses submit
+		}
+		// ZIKRY 21-09-2025 CEK KONEKSI JARINGAN
 
 		const csrfTokenName = "<?= $this->security->get_csrf_token_name(); ?>";
 		const csrfTokenValue = "<?= $this->security->get_csrf_hash(); ?>";
@@ -295,6 +307,61 @@
 		addAPI(payload);
 	}
 
+	// ZIKRY 21-09-2025 CEK KONEKSI JARINGAN
+	let isOffline = false; // flag status koneksi
+
+	function checkConnection() {
+	    if (!navigator.onLine) {
+	        setOffline();
+	        return;
+	    }
+
+	    $.ajax({
+	        url: "<?= site_url('backend/admission/ping'); ?>",
+	        method: "GET",
+	        timeout: 5000,
+	        success: function () {
+	            setOnline();
+	        },
+	        error: function () {
+	            setOffline();
+	        }
+	    });
+	}
+
+	function setOffline() {
+	    if (!isOffline) { // hanya tampilkan popup sekali
+	        Swal.fire({
+	            icon: 'error',
+	            title: 'Koneksi Terputus!',
+	            text: 'Hubungi IT Rumah Sakit untuk memastikan jaringan tersedia.',
+	            showConfirmButton: true
+	        });
+	        isOffline = true;
+	    }
+	    $("#btnSubmit").prop("disabled", true);
+	}
+
+	function setOnline() {
+	    if (isOffline) { // hanya tampilkan popup kalau sebelumnya offline
+	        Swal.fire({
+	            icon: 'success',
+	            title: 'Koneksi Stabil',
+	            timer: 2000,
+	            showConfirmButton: false
+	        });
+	        isOffline = false;
+	    }
+	    $("#btnSubmit").prop("disabled", false);
+	}
+
+	// Event listener
+	window.addEventListener('offline', setOffline);
+	window.addEventListener('online', setOnline);
+
+	// Jalankan ping tiap 1 detik
+	setInterval(checkConnection, 1000);
+	// ZIKRY 21-09-2025 CEK KONEKSI JARINGAN
 
 	function addAPI(data) {
 		let url;

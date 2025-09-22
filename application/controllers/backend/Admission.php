@@ -6,10 +6,10 @@ class Admission extends CI_Controller
 	{
 		parent::__construct();
 		error_reporting(0);
-		if ($this->session->userdata('logged') != TRUE) {
-			$url = base_url('login');
-			redirect($url);
-		};
+		//if ($this->session->userdata('logged') != TRUE) {
+		//	$url = base_url('login');
+		//	redirect($url);
+		//};
 		$this->load->model('Site_model', 'site_model');
 		$this->load->model('backend/Admission_model', 'admission_model');
 		$this->load->model('backend/Rme_model', 'rme_model');
@@ -47,13 +47,15 @@ class Admission extends CI_Controller
 		foreach ($getdata as $d) {
 			$opt[$d] = $d;
 		}
-		$getdatalantai = $this->admission_model->get_list_lantai();
-		$lt = array('' => '[Pilih Lantai]');
-		foreach ($getdatalantai as $x) {
-			$lt[$x] = $x;
+		$getdaruangan = $this->admission_model->get_list_ruangan();
+		$ru = array('' => '[Pilih Ruangan]');
+		foreach ($getdaruangan as $id => $nama) {
+		    $ru[$id] = $nama;
 		}
+		
+		
 		$data['form_filter'] = form_dropdown('', $opt, '', 'id="dokter" class="form-select dokter" style="width:100%;"');
-		$data['form_filter_lantai'] = form_dropdown('', $lt, '', 'id="lantai" class="form-select lantai" style="width:100%;"');
+		$data['form_filter_ruang'] = form_dropdown('', $ru, '', 'id="ruang" class="form-select ruang" style="width:100%;"');
 
 		$this->load->view('backend/menuhorizontal', $data);
 		$this->load->view('backend/_partials/templatejs');
@@ -117,7 +119,7 @@ class Admission extends CI_Controller
 
 			$post = $this->admission_model->get_edit_data($id);
 			$data['tgl_admit_raw'] = date($post->tgl_admit);
-			$data['tgl_admit'] = format_indo(date($post->tgl_admit));
+			$data['tgl_admit'] = format_indo(date("Y-m-d", strtotime($post->tgl_admit)));
 			$data['nama_pasien'] = $post->nama_pasien;
 			$data['no_rm'] = $post->no_rm;
 			$data['nama_lantai'] = $post->nama_lantai;
@@ -137,6 +139,10 @@ class Admission extends CI_Controller
 		} else {
 			redirect('backend/admission');
 		}
+	}
+	public function ping()
+	{
+	    echo json_encode(['status' => true, 'time' => date('Y-m-d H:i:s')]);
 	}
 
 	// TAMPILAN LIST MENU RME
@@ -264,11 +270,7 @@ class Admission extends CI_Controller
 
 		// DATA PASIEN
 		$post = $this->admission_model->get_edit_data($id);
-		if ($post->jenkel == 2) {
-			$post->jenkel = 'Perempuan';
-		} else {
-			$post->jenkel = 'Laki-laki';
-		}
+		
 
 		$data['id_pasien'] = $post->id_pasien;
 		$data['nama_pasien'] = $post->nama_pasien;
@@ -316,6 +318,13 @@ class Admission extends CI_Controller
 		$data['kelas'] = $post->kelas;
 		$data['lama'] = countme($post->tgl_admit);
 
+
+		/// LINK DIAGNOSA /// // PEMBAHARUAN 21-09-2025
+		$id_pasien = $post->id_pasien;
+		$id_kunjungan = $id;
+		$diagnosa_masuk = $this->admission_model->get_diagnosa_masuk($id_pasien, $id_kunjungan);
+		$data['diagnosa_masuk'] = $diagnosa_masuk;
+		/// LINK DIAGNOSA /// // PEMBAHARUAN 21-09-2025
 
 		$levelUser = $this->session->all_userdata()['level'];
 		if ($levelUser == 13) {
@@ -478,59 +487,6 @@ class Admission extends CI_Controller
 		$this->load->view('backend/rme/common', $data);
 	}
 
-
-	// PROSES SUBMIT DATA FORM RME
-	function submit()
-	{
-		$this->_validate();
-
-		$link = htmlspecialchars($this->input->post('namaberkas', TRUE), ENT_QUOTES);
-		if ($link == 'rm07') {
-			// Buat JSON DATA
-			$arraydata[] = array(
-				"nik" => htmlspecialchars($this->input->post('nik', TRUE), ENT_QUOTES),
-				"pendidikan" => htmlspecialchars($this->input->post('pendidikan', TRUE), ENT_QUOTES),
-				"pekerjaan" => htmlspecialchars($this->input->post('pekerjaan', TRUE), ENT_QUOTES),
-				"tgl_lahir" => htmlspecialchars($this->input->post('tgl_lahir', TRUE), ENT_QUOTES),
-				"ppjp" => htmlspecialchars($this->input->post('ppjp', TRUE), ENT_QUOTES),
-				"np" => htmlspecialchars($this->input->post('np', TRUE), ENT_QUOTES),
-				"lembarkfr" => htmlspecialchars($this->input->post('lembarkfr', TRUE), ENT_QUOTES),
-				"dfungsional" => htmlspecialchars($this->input->post('dfungsional', TRUE), ENT_QUOTES),
-				"dmedis" => htmlspecialchars($this->input->post('dmedis', TRUE), ENT_QUOTES),
-				"instrumentkfr" => htmlspecialchars($this->input->post('instrumentkfr', TRUE), ENT_QUOTES),
-				"hasilkfr" => htmlspecialchars($this->input->post('hasilkfr', TRUE), ENT_QUOTES),
-				"kesimpulan" => htmlspecialchars($this->input->post('kesimpulan', TRUE), ENT_QUOTES),
-				"rekomendasi" => htmlspecialchars($this->input->post('rekomendasi', TRUE), ENT_QUOTES),
-			);
-
-			// Buat JSON DATA
-		} else if ($link == 'rm08') {
-			$arraydata[] = array(
-				"json" => 'DATA JSON KOSONG',
-			);
-		} else {
-			$arraydata[] = array(
-				"json" => 'DATA JSON KOSONG',
-			);
-		}
-
-		$jsondata = json_encode($arraydata);
-		$data = array(
-			'id_pasien_rme' => htmlspecialchars($this->input->post('id_pasien', TRUE), ENT_QUOTES),
-			'id_kunjungan' => htmlspecialchars($this->input->post('id_kunjungan', TRUE), ENT_QUOTES),
-			'nama_berkas' => htmlspecialchars($this->input->post('namaberkas', TRUE), ENT_QUOTES),
-			'status_aktif' => 1,
-			'datajson' => "$jsondata",
-		);
-		$insert = $this->rme_model->submit_data($data);
-		if ($insert) {
-			$this->session->set_flashdata('msg', 'berhasil-tambah');
-			echo json_encode(array("status" => TRUE));
-		} else {
-			echo json_encode(array("status" => FALSE));
-		}
-	}
-
 	function onSubmitNathan()
 	{
 	    $nama_berkas = strtolower(htmlspecialchars($this->input->post('nama_berkas', TRUE), ENT_QUOTES));
@@ -654,7 +610,7 @@ class Admission extends CI_Controller
 
 	// ========================================= backup lama ======================================= //
 	// ========================================= backup lama ======================================= //
-		private function cleanInputArray($array)
+	private function cleanInputArray($array)
 	{
 		foreach ($array as $key => $value) {
 			if (is_array($value)) {
@@ -679,89 +635,188 @@ class Admission extends CI_Controller
 	    });
 	}
 
+
 	public function onSubmitNathanEdit()
 	{
-	    $nama_berkas = strtolower(htmlspecialchars($this->input->post('nama_berkas', TRUE), ENT_QUOTES));
+		$nama_berkas = strtolower(htmlspecialchars($this->input->post('nama_berkas', TRUE), ENT_QUOTES));
 
-	    // Pastikan form valid
-	    if (!method_exists($this->rmeformvalidation, $nama_berkas)) {
-	        $this->responseError([], "❌ Berkas/form tidak dikenali.");
-	        return;
-	    }
+		// Pastikan form valid
+		if (!method_exists($this->rmeformvalidation, $nama_berkas)) {
+			$this->responseError([], "❌ Berkas/form tidak dikenali.");
+			return;
+		}
 
-	    $payload = $this->input->post();
+		$payload = $this->input->post();
 
-	    // Validasi menggunakan form yang sesuai
-	    $isValid = $this->rmeformvalidation->$nama_berkas($payload);
-	    if (!$isValid) {
-	        $errors = $this->rmeformvalidation->getErrors();
-	        $this->responseError($errors, "❌ Validasi gagal.");
-	        return;
-	    }
+		// Validasi menggunakan form yang sesuai
+		$isValid = $this->rmeformvalidation->$nama_berkas($payload);
+		if (!$isValid) {
+			$errors = $this->rmeformvalidation->getErrors();
+			$this->responseError($errors, "❌ Validasi gagal.");
+			return;
+		}
 
-	    $id = $payload['data']["id"] ?? null;
-	    if (!$id) {
-	        $this->responseError([], "❌ ID data tidak ditemukan.");
-	        return;
-	    }
+		$id = $payload['data']["id"] ?? null;
+		if (!$id) {
+			$this->responseError([], "❌ ID data tidak ditemukan.");
+			return;
+		}
 
-	    unset($payload['data']["id"]);
+		unset($payload['data']["id"]);
 
-	    // ✅ AMBIL DATA LAMA dari DB
-	    $dataLamaObj = $this->rme_model->get_by_id($id);
-	    if (!$dataLamaObj) {
-	        $this->responseError([], "❌ Data tidak ditemukan.");
-	        return;
-	    }
+		// ✅ AMBIL DATA LAMA dari DB
+		$dataLamaObj = $this->rme_model->get_by_id($id);
+		if (!$dataLamaObj) {
+			$this->responseError([], "❌ Data tidak ditemukan.");
+			return;
+		}
 
-	    // Pastikan nama_berkas dari DB cocok dengan yang dikirim
-	    if (strtolower($dataLamaObj->nama_berkas) !== strtolower($nama_berkas)) {
-	        $this->responseError([], "❌ Form tidak sesuai dengan jenis berkas yang sedang diedit.");
-	        return;
-	    }
+		// Pastikan nama_berkas dari DB cocok dengan yang dikirim
+		if (strtolower($dataLamaObj->nama_berkas) !== strtolower($nama_berkas)) {
+			$this->responseError([], "❌ Form tidak sesuai dengan jenis berkas yang sedang diedit.");
+			return;
+		}
 
-	    // Decode data lama
-	    $dataLamaDecoded = json_decode($dataLamaObj->data_json, true);
-	    if (json_last_error() !== JSON_ERROR_NONE) {
-	        $dataLamaDecoded = []; // fallback jika JSON rusak
-	    }
+		// Decode data lama
+		$dataLamaDecoded = json_decode($dataLamaObj->data_json, true);
+		if (json_last_error() !== JSON_ERROR_NONE) {
+			$dataLamaDecoded = []; // fallback jika JSON rusak
+		}
 
-	    $dataBaru = $payload['data'];
+		$dataBaru = $payload['data'];
 
-	    // 💥 CEGAH overwrite jika data kosong (indikasi salah form atau error input)
-	    if (empty($dataBaru) || count($dataBaru) === 0) {
-	        $this->responseError([], "❌ Data kosong. Penyimpanan dibatalkan.");
-	        return;
-	    }
+		// 💥 CEGAH overwrite jika data kosong (indikasi salah form atau error input)
+		if (empty($dataBaru) || count($dataBaru) === 0) {
+			$this->responseError([], "❌ Data kosong. Penyimpanan dibatalkan.");
+			return;
+		}
 
-	    // ✅ Gabungkan (MERGE) data lama dan data baru
-	    $dataFinal = array_replace_recursive($dataLamaDecoded, $dataBaru);
-	    $dataFinal = $this->cleanInputArray($dataFinal); // Bersihkan karakter tak perlu
+		// ✅ Pastikan field boleh kosong tetap dikirim meski tidak ada di POST
+		$fieldsBolehKosong = ['perawat_pengkaji', 'dokter_umum', 'ruangan', 'poli', 'diagnosa', 'diagnosa_masuk','diagnosa_masuk2','diagnosa_masuk3','diagnosa_masuk4','diagnosa_keluar','diagnosa_keluar2','diagnosa_keluar3','diagnosa_keluar4','diagnosa_sekunder_1','diagnosa_sekunder_2','diagnosa_sekunder_3','diagnosa_sekunder_4','diagnosa_sekunder_5'];
+		foreach ($fieldsBolehKosong as $f) {
+			if (!array_key_exists($f, $dataBaru)) {
+				$dataBaru[$f] = ""; // kosongkan supaya bisa timpa data lama
+			}
+		}
 
-	    // Logging untuk audit perubahan
-	    log_message('error', "[RME PATCH] Update ID: $id oleh User: {$this->session->userdata('id')} — Berkas: $nama_berkas");
+		// Baru merge setelah field kosong dipaksa masuk
+		$dataFinal = array_replace_recursive($dataLamaDecoded, $dataBaru);
+		$dataFinal = $this->cleanInputArray($dataFinal);
 
-	    // Siapkan data update
-	    $query = [
-	        'data_json' => json_encode($dataFinal),
-	        'id_kunjungan' => htmlspecialchars($payload['id_kunjungan'], ENT_QUOTES),
-	        'id_pasien_rme' => $payload['id_pasien'],
-	        'nama_berkas' => htmlspecialchars($nama_berkas, ENT_QUOTES),
-	        'status_aktif' => 1,
-	    ];
 
-	    // Eksekusi update
-	    $success = $this->rme_model->updateData($query, $id);
 
-	    if (!$success) {
-	        $this->responseError([], "❌ Gagal menyimpan ke database.");
-	        return;
-	    }
+		// Logging untuk audit perubahan
+		log_message('error', "[RME PATCH] Update ID: $id oleh User: {$this->session->userdata('id')} — Berkas: $nama_berkas");
 
-	    // Success
-	    $this->session->set_flashdata('msg', "berhasil-ubah");
-	    $this->responseOK($success);
+		// Siapkan data update
+		$query = [
+			'data_json' => json_encode($dataFinal),
+			'id_kunjungan' => htmlspecialchars($payload['id_kunjungan'], ENT_QUOTES),
+			'id_pasien_rme' => $payload['id_pasien'],
+			'nama_berkas' => htmlspecialchars($nama_berkas, ENT_QUOTES),
+			'status_aktif' => 1,
+		];
+
+		// Eksekusi update
+		$success = $this->rme_model->updateData($query, $id);
+
+		if (!$success) {
+			$this->responseError([], "❌ Gagal menyimpan ke database.");
+			return;
+		}
+
+		// Success
+		$this->session->set_flashdata('msg', "berhasil-ubah");
+		$this->responseOK($success);
 	}
+
+	// backup controller lama
+	//////////////////////////
+	// public function onSubmitNathanEdit()
+	// {
+	//     $nama_berkas = strtolower(htmlspecialchars($this->input->post('nama_berkas', TRUE), ENT_QUOTES));
+
+	//     // Pastikan form valid
+	//     if (!method_exists($this->rmeformvalidation, $nama_berkas)) {
+	//         $this->responseError([], "❌ Berkas/form tidak dikenali.");
+	//         return;
+	//     }
+
+	//     $payload = $this->input->post();
+
+	//     // Validasi menggunakan form yang sesuai
+	//     $isValid = $this->rmeformvalidation->$nama_berkas($payload);
+	//     if (!$isValid) {
+	//         $errors = $this->rmeformvalidation->getErrors();
+	//         $this->responseError($errors, "❌ Validasi gagal.");
+	//         return;
+	//     }
+
+	//     $id = $payload['data']["id"] ?? null;
+	//     if (!$id) {
+	//         $this->responseError([], "❌ ID data tidak ditemukan.");
+	//         return;
+	//     }
+
+	//     unset($payload['data']["id"]);
+
+	//     // ✅ AMBIL DATA LAMA dari DB
+	//     $dataLamaObj = $this->rme_model->get_by_id($id);
+	//     if (!$dataLamaObj) {
+	//         $this->responseError([], "❌ Data tidak ditemukan.");
+	//         return;
+	//     }
+
+	//     // Pastikan nama_berkas dari DB cocok dengan yang dikirim
+	//     if (strtolower($dataLamaObj->nama_berkas) !== strtolower($nama_berkas)) {
+	//         $this->responseError([], "❌ Form tidak sesuai dengan jenis berkas yang sedang diedit.");
+	//         return;
+	//     }
+
+	//     // Decode data lama
+	//     $dataLamaDecoded = json_decode($dataLamaObj->data_json, true);
+	//     if (json_last_error() !== JSON_ERROR_NONE) {
+	//         $dataLamaDecoded = []; // fallback jika JSON rusak
+	//     }
+
+	//     $dataBaru = $payload['data'];
+
+	//     // 💥 CEGAH overwrite jika data kosong (indikasi salah form atau error input)
+	//     if (empty($dataBaru) || count($dataBaru) === 0) {
+	//         $this->responseError([], "❌ Data kosong. Penyimpanan dibatalkan.");
+	//         return;
+	//     }
+
+	//     // ✅ Gabungkan (MERGE) data lama dan data baru
+	//     $dataFinal = array_replace_recursive($dataLamaDecoded, $dataBaru);
+	//     $dataFinal = $this->cleanInputArray($dataFinal); // Bersihkan karakter tak perlu
+
+	//     // Logging untuk audit perubahan
+	//     log_message('error', "[RME PATCH] Update ID: $id oleh User: {$this->session->userdata('id')} — Berkas: $nama_berkas");
+
+	//     // Siapkan data update
+	//     $query = [
+	//         'data_json' => json_encode($dataFinal),
+	//         'id_kunjungan' => htmlspecialchars($payload['id_kunjungan'], ENT_QUOTES),
+	//         'id_pasien_rme' => $payload['id_pasien'],
+	//         'nama_berkas' => htmlspecialchars($nama_berkas, ENT_QUOTES),
+	//         'status_aktif' => 1,
+	//     ];
+
+	//     // Eksekusi update
+	//     $success = $this->rme_model->updateData($query, $id);
+
+	//     if (!$success) {
+	//         $this->responseError([], "❌ Gagal menyimpan ke database.");
+	//         return;
+	//     }
+
+	//     // Success
+	//     $this->session->set_flashdata('msg', "berhasil-ubah");
+	//     $this->responseOK($success);
+	// }
+	////////////// batas
+	///////////////////
 
 
 	// TAMPILAN FORM EDIT RME
@@ -858,6 +913,11 @@ class Admission extends CI_Controller
 			$temp['image'] = $temp['image_drawer'];
 			unset($temp['image_drawer']);
 		}
+		/// LINK DIAGNOSA /// // PEMBAHARUAN 21-09-2025
+		$id_pasien = $post->id_pasien;
+		$diagnosa_masuk = $this->admission_model->get_diagnosa_masuk($id_pasien, $id_kunjungan);
+		$data['diagnosa_masuk'] = $diagnosa_masuk;
+		/// LINK DIAGNOSA /// // PEMBAHARUAN 21-09-2025
 
 		// Encode JSON aman ke view dengan HEX agar tidak rusak di JS
 		$data['formData'] = json_encode($temp, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
@@ -912,7 +972,7 @@ class Admission extends CI_Controller
 			return;
 		}
 		$searchQuery = $this->input->get('q') ?? "";
-		$limit = $this->input->get('limit') ?? 20;
+		$limit = $this->input->get('limit') ?? 10;
 		$offset = $this->input->get('offset') ?? 0;
 
 		$data = $this->admission_model->get_all_diagnosa($searchQuery, $limit, $offset);
@@ -1043,7 +1103,7 @@ class Admission extends CI_Controller
 		$items = array_map(function ($item) {
 			return [
 				'id_original' => $item->id,
-				'id' => $item->nama,
+				'id' => $item->id,
 				'text' => $item->nama,
 				'qr' => $item->path_ttd
 			];

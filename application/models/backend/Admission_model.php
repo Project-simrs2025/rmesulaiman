@@ -11,6 +11,7 @@ class Admission_model extends CI_Model
 	var $tablemenu = 'menurme';
 	var $tabledokter = 'master_karyawan';
 	var $tablelantai = 'tbl_lantai';
+	var $tableruangan = 'tbl_ruangan';
 	var $column_search_admission = array('admission.tgl_admit', 'p.no_rm', 'p.nama', 'lt.nama_lantai', 'ru.nama_ruangan', 'k.nama', 'bed.no_bad', 'dokter.nama', 'poli.name');
 	var $column_search_menu = array('menurme.rm', 'menurme.isi');
 
@@ -29,8 +30,9 @@ class Admission_model extends CI_Model
 		if ($this->input->post('dokter')) {
 			$this->postgres->like('dokter.nama', $this->input->post('dokter'));
 		}
-		if ($this->input->post('lantai')) {
-			$this->postgres->like('lt.nama_lantai', $this->input->post('lantai'));
+		
+		if ($this->input->post('ruang')) {
+			$this->postgres->where('admission.ruang', $this->input->post('ruang'));
 		}
 		$this->postgres->select('admission.*, p.nama AS nama_pasien, lt.nama_lantai, ru.nama_ruangan, k.nama AS nama_jenis_pasien,bed.no_bad,dokter.nama as nama_dokter,poli.name as nama_poli, p.no_bpjs as no_bpjs');
 		$this->postgres->from($this->tableadmission);
@@ -53,7 +55,7 @@ class Admission_model extends CI_Model
 	public function get_all_diagnosa($searchQuery, $limit, $offset)
 	{
 		$this->postgres->select('id, nama, code');
-		$this->postgres->from('icd10new');
+		$this->postgres->from('master_icd10');
 
 		if (!empty($searchQuery)) {
 			$this->postgres->where("nama ILIKE", '%' . $searchQuery . '%');
@@ -68,7 +70,7 @@ class Admission_model extends CI_Model
 
 	public function count_all_diagnosa($searchQuery = null)
 	{
-		$this->postgres->from('icd10new');
+		$this->postgres->from('master_icd10');
 
 		if (!empty($searchQuery)) {
 			$this->postgres->like('nama', $searchQuery); // Search by 'nama' column
@@ -76,6 +78,36 @@ class Admission_model extends CI_Model
 
 		return $this->postgres->count_all_results();
 	}
+
+
+	/// LINK DIAGNOSA /// // PEMBAHARUAN 21-09-2025
+	public function get_diagnosa_masuk($id_pasien_rme, $id_kunjungan) {
+        $query = $this->postgres->select('data_json')
+            ->from('rmebaru')
+            ->where('id_pasien_rme', $id_pasien_rme)
+            ->where('id_kunjungan', $id_kunjungan)
+            ->where('nama_berkas', 'rm2')
+            ->order_by('id', 'DESC')
+            ->limit(1)
+            ->get();
+
+        $diagnosa_masuk = [];
+
+        if ($query->num_rows() > 0) {
+            $row  = $query->row();
+            $json = json_decode($row->data_json, true);
+
+            $diagnosa_masuk = [
+                'diagnosa1' => $json['diagnosa1'] ?? '',
+                'diagnosa2' => $json['diagnosa2'] ?? '',
+                'diagnosa3' => $json['diagnosa3'] ?? '',
+            ];
+        }
+
+        return $diagnosa_masuk;
+    }
+    /// LINK DIAGNOSA /// // PEMBAHARUAN 21-09-2025
+
 
 	// AMBIL CODE ICD 9
 	public function get_all_diagnosa9($searchQuery, $limit, $offset)
@@ -338,6 +370,20 @@ class Admission_model extends CI_Model
 		}
 		return $getdata;
 	}
+	public function get_list_ruangan()
+	{
+	    $this->postgres->select('id_ruangan,nama_ruangan');
+	    $this->postgres->from($this->tableruangan);
+	    $this->postgres->order_by('id_ruangan', 'asc');
+	    $query = $this->postgres->get();
+	    $result = $query->result();
+
+	    $getdata = array();
+	    foreach ($result as $row) {
+	        $getdata[$row->id_ruangan] = $row->nama_ruangan; // <-- ini kunci
+	    }
+	    return $getdata;
+	}
 
 	function get_id_data($id)
 	{
@@ -372,8 +418,37 @@ class Admission_model extends CI_Model
 
 	public function get_edit_data($id_kunjungan)
 	{
-		$this->postgres->select('admission.*, p.nama AS nama_pasien, lt.nama_lantai, ru.nama_ruangan, k.nama AS nama_jenis_pasien,bed.no_bad,dokter.nama as nama_dokter,poli.name as nama_poli, p.nik, p.tanggal_lahir,p.no_bpjs as no_bpjs, pk.nama as nama_pekerjaan, jk.nama as jenkel, p.alamat, p.pendidikan_terakhir, agama.nama as nama_agama, p.no_handphone, dokter.path_ttd, suku.nama as nama_suku, penjamin.nama as nama_hub_pasien, penjamin.no_telepon as telp_hub_pasien, penjamin.alamat as alamat_hub_pasien, admission.tgl_admit as tgl_admit, transaksi.total as biaya, discharge.type as cara_pulang,kunj.waktu_input as waktu_input,
-			hub_keluarga.nama as hubungan_keluarga');
+		$this->postgres->select("
+		    admission.*,
+		    p.nama AS nama_pasien,
+		    lt.nama_lantai,
+		    ru.nama_ruangan,
+		    k.nama AS nama_jenis_pasien,
+		    bed.no_bad,
+		    dokter.nama as nama_dokter,
+		    poli.name as nama_poli,
+		    p.nik,
+		    p.tanggal_lahir,
+		    p.no_bpjs as no_bpjs,
+		    pk.nama as nama_pekerjaan,
+		    jk.nama as jenkel,
+		    p.alamat,
+		    p.pendidikan_terakhir,
+		    agama.nama as nama_agama,
+		    p.no_handphone,
+		    dokter.path_ttd,
+		    suku.nama as nama_suku,
+		    penjamin.nama as nama_hub_pasien,
+		    penjamin.no_telepon as telp_hub_pasien,
+		    penjamin.alamat as alamat_hub_pasien,
+		    to_char(COALESCE(msep.tgl_sep, kunj.waktu_input::date),'DD-MM-YYYY') AS tgl_admit,
+
+		    transaksi.total as biaya,
+		    discharge.type as cara_pulang,
+		    kunj.waktu_input as waktu_input,
+		    hub_keluarga.nama as hubungan_keluarga
+		");
+
 		$this->postgres->from('admission');
 		$this->postgres->join('master_pasien p', 'p.id = admission.id_pasien', 'left');
 		$this->postgres->join('master_pasien_penjamin penjamin', 'p.id = CAST(penjamin.id_pasien AS BIGINT)', 'left');
@@ -383,7 +458,8 @@ class Admission_model extends CI_Model
 		//// new ////////////
 		$this->postgres->join('transaksi_invoice transaksi', 'CAST(transaksi.id_pasien AS INTEGER) = admission.id_pasien', 'left');
 		$this->postgres->join('discharge discharge', 'discharge.no_rm = admission.no_rm', 'left');
-		$this->postgres->join('kunjungan kunj', 'kunj.id_pasien = admission.id_pasien', 'left');
+		$this->postgres->join('kunjungan kunj', 'kunj.id = admission.id_kunjungan', 'left');
+		$this->postgres->join('master_sep msep', 'msep.no_sep = kunj.no_sep', 'left');
 		$this->postgres->join('master_hubungan_keluarga hub_keluarga', 'hub_keluarga.id = penjamin.id_hubungan', 'left');
 		//////////////////
 		

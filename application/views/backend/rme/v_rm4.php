@@ -45,7 +45,7 @@
 	<div class="col-md-6">
 		<div class="mb-3">
 			<label class="form-label">Tgl Keluar</label>
-			<input type="datetime-local" class="form-control border-dark" name="tgl_keluar" value="<?= date('Y-m-d H:i') ?>">
+			<input type="datetime-local" class="form-control border-dark" name="tgl_keluar">
 		</div>
 	</div>
 </div>
@@ -370,9 +370,20 @@
 						<td colspan="3">
 							<div class="mb-3">
 								<label for="diagnosa-masuk" class="form-label">Diagnosa Masuk</label>
-								<select type="select" name="diagnosa_masuk" class="form-control w-100 diagnosa">
+								<!-- PEMBAHARUAN 21-09-2025 -->
+								<select type="select" name="diagnosa_masuk" id="diagnosa_masuk" class="form-control w-100 diagnosa">
 								</select>
 							</div>
+
+							<?php for($i=2; $i<=4; $i++) : ?>
+							<div class="mb-3">
+								<select type="select" name="diagnosa_masuk_<?= $i ?>" class="form-control w-100 diagnosa">
+								</select>
+							</div>
+							<?php endfor;?>
+							
+
+							
 						</td>
 					</tr>
 					<tr>
@@ -382,6 +393,14 @@
 								<select type="select" name="diagnosa_akhir" class="form-control w-100 diagnosa">
 								</select>
 							</div>
+							
+							<?php for($i=2; $i<=4; $i++) : ?>
+								<div class="mb-3">
+									<select type="select" name="diagnosa_akhir_<?= $i ?>" class="form-control w-100 diagnosa">
+									</select>
+								</div>
+							<?php endfor;?>
+							
 						</td>
 					</tr>
 					<tr>
@@ -397,7 +416,34 @@
 		</div>
 	</div>
 </div>
+<!-- PEMBAHARUAN 21-09-2025 -->
+<script>
+$(document).ready(function() {
+    const diagnosa_masuk = <?= json_encode($diagnosa_masuk) ?>;
 
+    // diagnosa1
+    if (diagnosa_masuk.diagnosa1) {
+        $('#diagnosa_masuk').append(
+            $('<option>', { value: diagnosa_masuk.diagnosa1, text: diagnosa_masuk.diagnosa1, selected: true })
+        ).trigger('change');
+    }
+
+    // diagnosa2
+    if (diagnosa_masuk.diagnosa3) {
+        $('select[name="diagnosa_masuk_3"]').append(
+            $('<option>', { value: diagnosa_masuk.diagnosa2, text: diagnosa_masuk.diagnosa2, selected: true })
+        ).trigger('change');
+    }
+
+    // diagnosa3
+    if (diagnosa_masuk.diagnosa2) {
+        $('select[name="diagnosa_masuk_2"]').append(
+            $('<option>', { value: diagnosa_masuk.diagnosa3, text: diagnosa_masuk.diagnosa3, selected: true })
+        ).trigger('change');
+    }
+});
+</script>
+<!-- PEMBAHARUAN 21-09-2025 -->
 
 <script>
 	const mode = "<?= $mode; ?>"
@@ -461,8 +507,8 @@
 					console.log("params", params)
 					return {
 						q: params.term, // Search query
-						limit: 100, // Number of items per page
-						offset: (page - 1) * 100, // Calculate offset
+						limit: 20,
+						offset: ((params.page || 1) - 1) * 20,
 					};
 				},
 				processResults: function(data) {
@@ -484,15 +530,15 @@
 
 		});
 
-		$('.diagnosa').on('select2:open', function() {
-			$('.select2-results__options').on('scroll', function() {
-				const $this = $(this);
-				if ($this.scrollTop() + $this.innerHeight() >= $this[0].scrollHeight) {
-					page++; // Increment page
-					$('#diagnosa').select2('data', null); // Trigger new data fetch
-				}
-			});
-		});
+		// $('.diagnosa').on('select2:open', function() {
+		// 	$('.select2-results__options').on('scroll', function() {
+		// 		const $this = $(this);
+		// 		if ($this.scrollTop() + $this.innerHeight() >= $this[0].scrollHeight) {
+		// 			page++; // Increment page
+		// 			$('#diagnosa').select2('data', null); // Trigger new data fetch
+		// 		}
+		// 	});
+		// });
 	})
 
 	function listPerawatAPI() {

@@ -584,59 +584,97 @@ class Rmerawatjalan extends CI_Controller
 
 
 
-	function onSubmitNathanEdit()
+	public function onSubmitNathanEdit()
 	{
 		$nama_berkas = strtolower(htmlspecialchars($this->input->post('nama_berkas', TRUE), ENT_QUOTES));
 
+		// Pastikan form valid
 		if (!method_exists($this->rmeformvalidation, $nama_berkas)) {
-			$this->responseError([], "Berkas tidak ada");
+			$this->responseError([], "❌ Berkas/form tidak dikenali.");
 			return;
 		}
 
 		$payload = $this->input->post();
+
+		// Validasi menggunakan form yang sesuai
 		$isValid = $this->rmeformvalidation->$nama_berkas($payload);
 		if (!$isValid) {
 			$errors = $this->rmeformvalidation->getErrors();
-			$this->responseError($errors, "Validasi gagal");
+			$this->responseError($errors, "❌ Validasi gagal.");
 			return;
 		}
 
-		$id = isset($payload['data']["id"]) ? trim($payload['data']["id"]) : null;
-
-		// Tolak jika tidak ada ID (berarti ini bukan edit)
-		if (empty($id)) {
-			$this->responseError([], "Penambahan data tidak diperbolehkan.");
+		$id = $payload['data']["id"] ?? null;
+		if (!$id) {
+			$this->responseError([], "❌ ID data tidak ditemukan.");
 			return;
 		}
 
-		unset($payload['data']["id"]); // tetap hapus ID dari data_json
+		unset($payload['data']["id"]);
 
-		// Ambil data lama dan lakukan merge
-		$existing = $this->rme_model->getDataById($id);
-		if (!$existing) {
-			$this->responseError([], "Data tidak ditemukan untuk diupdate.");
+		// ✅ AMBIL DATA LAMA dari DB
+		$dataLamaObj = $this->rme_model->get_by_id($id);
+		if (!$dataLamaObj) {
+			$this->responseError([], "❌ Data tidak ditemukan.");
 			return;
 		}
 
-		$oldData = json_decode($existing['data_json'], true);
-		if (!is_array($oldData)) $oldData = [];
+		// Pastikan nama_berkas dari DB cocok dengan yang dikirim
+		if (strtolower($dataLamaObj->nama_berkas) !== strtolower($nama_berkas)) {
+			$this->responseError([], "❌ Form tidak sesuai dengan jenis berkas yang sedang diedit.");
+			return;
+		}
 
-		$dataFinal = array_replace_recursive($oldData, $payload['data']);
-		$dataFinal = $this->cleanInputArray($dataFinal); // ✨ bersihkan \r
+		// Decode data lama
+		$dataLamaDecoded = json_decode($dataLamaObj->data_json, true);
+		if (json_last_error() !== JSON_ERROR_NONE) {
+			$dataLamaDecoded = []; // fallback jika JSON rusak
+		}
+
+		$dataBaru = $payload['data'];
+
+		// 💥 CEGAH overwrite jika data kosong (indikasi salah form atau error input)
+		if (empty($dataBaru) || count($dataBaru) === 0) {
+			$this->responseError([], "❌ Data kosong. Penyimpanan dibatalkan.");
+			return;
+		}
+
+		// ✅ Pastikan field boleh kosong tetap dikirim meski tidak ada di POST
+		$fieldsBolehKosong = ['perawat_pengkaji', 'dokter_umum', 'ruangan', 'poli', 'diagnosa', 'diagnosa_masuk','diagnosa_masuk2','diagnosa_masuk3','diagnosa_masuk4','diagnosa_keluar','diagnosa_keluar2','diagnosa_keluar3','diagnosa_keluar4','diagnosa_sekunder_1','diagnosa_sekunder_2','diagnosa_sekunder_3','diagnosa_sekunder_4','diagnosa_sekunder_5'];
+		foreach ($fieldsBolehKosong as $f) {
+			if (!array_key_exists($f, $dataBaru)) {
+				$dataBaru[$f] = ""; // kosongkan supaya bisa timpa data lama
+			}
+		}
+
+		// Baru merge setelah field kosong dipaksa masuk
+		$dataFinal = array_replace_recursive($dataLamaDecoded, $dataBaru);
+		$dataFinal = $this->cleanInputArray($dataFinal);
 
 
+
+		// Logging untuk audit perubahan
+		log_message('error', "[RME PATCH] Update ID: $id oleh User: {$this->session->userdata('id')} — Berkas: $nama_berkas");
+
+		// Siapkan data update
 		$query = [
-			'data_json' => json_encode($dataFinal)
+			'data_json' => json_encode($dataFinal),
+			'id_kunjungan' => htmlspecialchars($payload['id_kunjungan'], ENT_QUOTES),
+			'id_pasien_rme' => $payload['id_pasien'],
+			'nama_berkas' => htmlspecialchars($nama_berkas, ENT_QUOTES),
+			'status_aktif' => 1,
 		];
 
+		// Eksekusi update
 		$success = $this->rme_model->updateData($query, $id);
 
-		// if (!$success) {
-		// 	$this->responseError([], "Gagal mengupdate data.");
-		// 	return;
-		// }
+		if (!$success) {
+			$this->responseError([], "❌ Gagal menyimpan ke database.");
+			return;
+		}
 
-		// $this->session->set_flashdata('msg', "berhasil-ubah");
+		// Success
+		$this->session->set_flashdata('msg', "berhasil-ubah");
 		$this->responseOK($success);
 	}
 

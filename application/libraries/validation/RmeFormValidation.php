@@ -39,6 +39,10 @@ class RmeFormValidation
 	{
 		return true;
 	}
+	function picu($payload)
+	{
+		return true;
+	}
 	/* form josua
 	rm 1, 1a, 1c, 1d, 3j
 	8, 16A, 3b, 3c, 3e,
@@ -63,6 +67,42 @@ class RmeFormValidation
 		return true;
 	}
 	function rm8_new($payload)
+	{
+		return true;
+	}
+	function rm17_new($payload)
+	{
+		return true;
+	}
+	function rm17a_new($payload)
+	{
+		return true;
+	}
+	function rm18_new($payload)
+	{
+		return true;
+	}
+	function rm18a_new($payload)
+	{
+		return true;
+	}
+	function rm18b_new($payload)
+	{
+		return true;
+	}
+	function rm18c_new($payload)
+	{
+		return true;
+	}
+	function rm18d_new($payload)
+	{
+		return true;
+	}
+	function rm18e_new($payload)
+	{
+		return true;
+	}
+	function rm18h_new($payload)
 	{
 		return true;
 	}
@@ -197,7 +237,11 @@ class RmeFormValidation
 		return true;
 	}
 
-	function rm12c($payload)
+	// function rm12c($payload)
+	// {
+	// 	return true;
+	// }
+	function rm12c_new($payload)
 	{
 		return true;
 	}
@@ -278,10 +322,10 @@ class RmeFormValidation
 		return true;
 	}
 
-	function rm18e($payload)
-	{
-		return true;
-	}
+	// function rm18e($payload)
+	// {
+	// 	return true;
+	// }
 
 	function rm18f($payload)
 	{
@@ -289,6 +333,28 @@ class RmeFormValidation
 	}
 
 	function rm19($payload)
+	{
+		return true;
+	}
+
+	function rm19a($payload)
+	{
+		return true;
+	}
+
+	function pernyataan_2x($payload)
+	{
+		return true;
+	}
+	function pernyataan_umum($payload)
+	{
+		return true;
+	}
+	function kronologis($payload)
+	{
+		return true;
+	}
+	function permohonan($payload)
 	{
 		return true;
 	}

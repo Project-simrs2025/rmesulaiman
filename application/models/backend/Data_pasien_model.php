@@ -241,14 +241,14 @@ class Data_pasien_model extends CI_Model
 	
 	public function get_edit_data3($id_kunjungan)
 	{
-		$this->postgres->select('antrian.*, antrian.id_kunjungan,antrian.id_pasien,patient.nama AS nama_pasien, patient.no_rm AS no_rm, patient.nik AS nik, patient.pendidikan_terakhir, patient.alamat, patient.no_handphone, patient.tanggal_lahir, penjamin.nama AS nama_jenis_pasien,k.nama as nama_dokter,poly.name AS nama_poli,antrian.id_poly AS poli_id,patient.id AS patien_id, jk.nama as jenkel, pk.nama as nama_pekerjaan, suku.nama as nama_suku, agama.nama as nama_agama, penjamin_pasien.nama as nama_hub_pasien, penjamin_pasien.alamat as alamat_hub_pasien,antrian.waktu_masuk AS tgl_admit,penjamin_pasien.no_telepon as telp_hub_pasien, patient.no_bpjs as no_bpjs, sep.klsrawat as kelas, transaksi.total as biaya, dischar.type as cara_pulang, antrian.waktu_keluar as tgl_discharge,antrian.waktu_keluar as tanggal_keluar');
+		$this->postgres->select("antrian.*, antrian.id_kunjungan,antrian.id_pasien,patient.nama AS nama_pasien, patient.no_rm AS no_rm, patient.nik AS nik, patient.pendidikan_terakhir, patient.alamat, patient.no_handphone, patient.tanggal_lahir, penjamin.nama AS nama_jenis_pasien,k.nama as nama_dokter,poly.name AS nama_poli,antrian.id_poly AS poli_id,patient.id AS patien_id, jk.nama as jenkel, pk.nama as nama_pekerjaan, suku.nama as nama_suku, agama.nama as nama_agama, penjamin_pasien.nama as nama_hub_pasien, penjamin_pasien.alamat as alamat_hub_pasien,antrian.waktu_masuk AS tgl_admit,penjamin_pasien.no_telepon as telp_hub_pasien, patient.no_bpjs as no_bpjs, msep.klsrawat as kelas, transaksi.total as biaya, dischar.type as cara_pulang, antrian.waktu_keluar as tgl_discharge,antrian.waktu_keluar as tanggal_keluar,to_char(COALESCE(msep.tgl_sep, kunj.waktu_input::date),'DD-MM-YYYY') AS tgl_admit");
 		$this->postgres->from('antrian');
 		$this->postgres->join('master_pasien patient', 'patient.id = antrian.id_pasien', 'left');
 		$this->postgres->join('master_pasien_penjamin penjamin_pasien', 'patient.id = CAST(penjamin_pasien.id_pasien AS BIGINT)', 'left');
 		$this->postgres->join('master_kategori_harga penjamin', 'CAST(penjamin.id AS varchar) = CAST(antrian.id_kategori_harga AS varchar)', 'left');
 		$this->postgres->join('kunjungan kunj', 'kunj.id = antrian.id_kunjungan', 'left');
 		/////////////////// new ////////////////////////////////////////////////////////
-		$this->postgres->join('master_sep sep', 'sep.no_sep = kunj.no_sep', 'left');
+		$this->postgres->join('master_sep msep', 'msep.no_sep = kunj.no_sep', 'left');
 		$this->postgres->join('transaksi_invoice transaksi', 'CAST(transaksi.id_pasien as INTEGER) = antrian.id_pasien', 'left');
 		$this->postgres->join('discharge dischar', 'dischar.id_pasien = antrian.id_pasien', 'left');
 		/////////////////// new ////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ class Data_pasien_model extends CI_Model
 	}
 	public function get_edit_data_pasien($id_kunjungan)
 	{
-		$this->postgres->select('admission.*, p.nama AS nama_pasien, lt.nama_lantai, ru.nama_ruangan, k.nama AS nama_jenis_pasien,bed.no_bad,dokter.nama as nama_dokter,poli.name as nama_poli, p.nik, p.tanggal_lahir,p.no_bpjs as no_bpjs, pk.nama as nama_pekerjaan, jk.nama as jenkel, p.alamat, p.pendidikan_terakhir, agama.nama as nama_agama, p.no_handphone, dokter.path_ttd, suku.nama as nama_suku, penjamin.nama as nama_hub_pasien, penjamin.no_telepon as telp_hub_pasien, penjamin.alamat as alamat_hub_pasien,kunj.waktu_input as waktu_input, hub_keluarga.nama as hubungan_keluarga');
+		$this->postgres->select("admission.*, p.nama AS nama_pasien, lt.nama_lantai,msep.klsrawat as kelas, ru.nama_ruangan, k.nama AS nama_jenis_pasien,bed.no_bad,dokter.nama as nama_dokter,poli.name as nama_poli, p.nik, p.tanggal_lahir,p.no_bpjs as no_bpjs, pk.nama as nama_pekerjaan, jk.nama as jenkel, p.alamat, p.pendidikan_terakhir, agama.nama as nama_agama, p.no_handphone, dokter.path_ttd, suku.nama as nama_suku, penjamin.nama as nama_hub_pasien, penjamin.no_telepon as telp_hub_pasien, penjamin.alamat as alamat_hub_pasien,kunj.waktu_input as waktu_input, hub_keluarga.nama as hubungan_keluarga,to_char(COALESCE(msep.tgl_sep, kunj.waktu_input::date),'DD-MM-YYYY') AS tgl_admit");
 		$this->postgres->from('admission');
 		$this->postgres->join('master_pasien p', 'p.id = admission.id_pasien', 'left');
 		$this->postgres->join('master_pasien_penjamin penjamin', 'p.id = CAST(penjamin.id_pasien AS BIGINT)', 'left');
@@ -278,8 +278,8 @@ class Data_pasien_model extends CI_Model
 		$this->postgres->join('tbl_bad bed', 'bed.id_bad = admission.bad', 'left');
 		$this->postgres->join('master_kategori_harga k', 'k.id = p.id_jenis_pasien', 'left');
 		$this->postgres->join('master_pekerjaan pk', 'CAST(pk.id AS VARCHAR) = p.id_pekerjaan', 'left');
-		$this->postgres->join('kunjungan kunj', 'kunj.id_pasien = admission.id_pasien', 'left');
-
+		$this->postgres->join('kunjungan kunj', 'kunj.id = admission.id_kunjungan', 'left');
+		$this->postgres->join('master_sep msep', 'msep.no_sep = kunj.no_sep', 'left');
 		$this->postgres->join('master_suku suku', 'CAST(suku.id AS char) = p.id_suku', 'left');
 		$this->postgres->join('master_agama agama', 'CAST(agama.id AS char) = p.id_agama', 'left');
 		$this->postgres->join('master_jenkel jk', 'CAST(jk.id AS char) = p.jenkel', 'left');
@@ -293,7 +293,7 @@ class Data_pasien_model extends CI_Model
 	}
 	public function get_edit_data_pasien_rj($id_kunjungan)
 	{
-		$this->postgres->select('antrian.*, antrian.id_kunjungan,antrian.waktu_masuk,antrian.id_pasien,patient.nama AS nama_pasien, patient.no_rm AS no_rm, patient.nik AS nik, patient.pendidikan_terakhir, patient.alamat, patient.no_handphone, patient.tanggal_lahir, penjamin.nama AS nama_jenis_pasien,k.nama as nama_dokter,poly.name AS nama_poli,antrian.id_poly AS poli_id,patient.id AS patien_id, jk.nama as jenkel, pk.nama as nama_pekerjaan, suku.nama as nama_suku, agama.nama as nama_agama, patient.no_bpjs as no_bpjs, a.tgl_admit as tgl_admit, penjamin_pasien.nama as nama_hub_pasien, penjamin_pasien.alamat as alamat_hub_pasien, penjamin_pasien.no_handphone as telp_hub_pasien');
+		$this->postgres->select("antrian.*, antrian.id_kunjungan,antrian.waktu_masuk,antrian.id_pasien,msep.klsrawat as kelas,patient.nama AS nama_pasien, patient.no_rm AS no_rm, patient.nik AS nik, patient.pendidikan_terakhir, patient.alamat, patient.no_handphone, patient.tanggal_lahir, penjamin.nama AS nama_jenis_pasien,k.nama as nama_dokter,poly.name AS nama_poli,antrian.id_poly AS poli_id,patient.id AS patien_id, jk.nama as jenkel, pk.nama as nama_pekerjaan, suku.nama as nama_suku, agama.nama as nama_agama, patient.no_bpjs as no_bpjs, a.tgl_admit as tgl_admit, penjamin_pasien.nama as nama_hub_pasien, penjamin_pasien.alamat as alamat_hub_pasien, penjamin_pasien.no_handphone as telp_hub_pasien,to_char(COALESCE(msep.tgl_sep, kunj.waktu_input::date),'DD-MM-YYYY') AS tgl_admit");
 		$this->postgres->from('antrian');
 		$this->postgres->join('master_pasien patient', 'patient.id = antrian.id_pasien', 'left');
 		$this->postgres->join('admission a', 'a.id_kunjungan = antrian.id_kunjungan', 'left');
@@ -303,7 +303,8 @@ class Data_pasien_model extends CI_Model
 	    $this->postgres->join('master_pekerjaan pk', 'CAST(pk.id AS VARCHAR) = patient.id_pekerjaan', 'left');
 		$this->postgres->join('master_suku suku', 'CAST(suku.id AS char) = patient.id_suku', 'left');
 		$this->postgres->join('master_agama agama', 'CAST(agama.id AS char) = patient.id_agama', 'left');
-
+		$this->postgres->join('kunjungan kunj', 'kunj.id_pasien = patient.id', 'left');
+		$this->postgres->join('master_sep msep', 'msep.no_sep = kunj.no_sep', 'left');
 	    $this->postgres->join('master_karyawan k', 'CAST(k.id AS varchar) = CAST(antrian.id_dokter AS varchar)', 'left');
 		$this->postgres->join('master_poly poly', 'poly.id = antrian.id_poly', 'left');
 		$this->postgres->where('antrian.id_kunjungan', $id_kunjungan);

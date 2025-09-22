@@ -105,6 +105,19 @@ class Data_klaim_model extends CI_Model
 
         return $query;
     }
+	public function cekDataByKunjungan($id_kunjungan) {
+		$validasiberkas = [
+			'rm9','rm2', 'rm2a', 'rm2b', 'rm3', 'rm3a_new', 'rm7_new', 'rm_cppt',
+			'rm15e', 'rm17d01', 'rm17d02', 'rm18e_new', 'icuu', 'picu', 'rm28_new', 'rm2', 'rm12c_new'
+		];
+
+		$this->postgres->where('id_kunjungan', $id_kunjungan);
+		$this->postgres->where('status_aktif', 1);
+		$this->postgres->where_in('nama_berkas', $validasiberkas);
+
+		return $this->postgres->get('rmebaru')->num_rows();
+	}
+
     function get_data_dari($id_kunjungan)
     {
         $sql = "SELECT 
@@ -123,12 +136,12 @@ class Data_klaim_model extends CI_Model
     }
     public function get_data_darirj($id_kunjungan)
     {
-        $this->postgres->select('antrian.*, antrian.id_kunjungan,antrian.waktu_masuk,antrian.id_pasien,patient.nama AS nama_pasien, patient.no_rm AS no_rm, patient.nik AS nik, patient.pendidikan_terakhir, patient.alamat, patient.no_handphone, patient.tanggal_lahir, penjamin.nama AS nama_jenis_pasien, patient.no_bpjs as no_bpjs,k.nama as nama_dokter,k.path_ttd as path_ttd,poly.name AS nama_poli,antrian.id_poly AS poli_id,patient.id AS patien_id, jk.nama as jenkel, pk.nama as nama_pekerjaan, suku.nama as nama_suku, agama.nama as nama_agama, mprj.name AS cara_pulang, msep.klsrawat');
+        $this->postgres->select("antrian.*, antrian.id_kunjungan,antrian.waktu_masuk,antrian.id_pasien,patient.nama AS nama_pasien, patient.no_rm AS no_rm, patient.nik AS nik, patient.pendidikan_terakhir, patient.alamat, patient.no_handphone, patient.tanggal_lahir, penjamin.nama AS nama_jenis_pasien, patient.no_bpjs as no_bpjs,k.nama as nama_dokter,k.path_ttd as path_ttd,poly.name AS nama_poli,antrian.id_poly AS poli_id,patient.id AS patien_id, jk.nama as jenkel, pk.nama as nama_pekerjaan, suku.nama as nama_suku, agama.nama as nama_agama, mprj.name AS cara_pulang, msep.klsrawat,to_char(COALESCE(msep.tgl_sep, kunj.waktu_input::date),'DD-MM-YYYY') AS tgl_admit");
         $this->postgres->from('antrian');
         $this->postgres->join('master_pasien patient', 'patient.id = antrian.id_pasien', 'left');
         
-        $this->postgres->join('kunjungan kun', 'kun.id = antrian.id_kunjungan', 'left');
-        $this->postgres->join('master_sep msep', 'msep.no_sep = kun.no_sep', 'left');
+        $this->postgres->join('kunjungan kunj', 'kunj.id = antrian.id_kunjungan', 'left');
+        $this->postgres->join('master_sep msep', 'msep.no_sep = kunj.no_sep', 'left');
 
         $this->postgres->join('master_kategori_harga penjamin', 'CAST(penjamin.id AS varchar) = CAST(antrian.id_kategori_harga AS varchar)', 'left');
         $this->postgres->join('master_jenkel jk', 'CAST(jk.id AS char) = patient.jenkel', 'left');
@@ -147,12 +160,12 @@ class Data_klaim_model extends CI_Model
     }
     public function get_data_dariri($id_kunjungan)
     {
-        $this->postgres->select('admission.*, p.nama AS nama_pasien, lt.nama_lantai, ru.nama_ruangan, k.nama AS nama_jenis_pasien,bed.no_bad,dokter.nama as nama_dokter,poli.name as nama_poli, p.nik, p.tanggal_lahir, pk.nama as nama_pekerjaan, jk.nama as jenkel, p.alamat, p.pendidikan_terakhir, agama.nama as nama_agama, p.no_handphone, dokter.path_ttd, suku.nama as nama_suku, penjamin.nama as nama_hub_pasien,penjamin.alamat as alamat_hub_pasien,penjamin.no_handphone as noHp_hub_pasien, hub.nama as hubungan_keluarga_pasien, kawin.nama as status_nikah, warga.nama as nama_bangsa, p.no_bpjs as no_bpjs, mprj.name AS cara_pulang, ant.cara_pulang, msep.klsrawat');
+        $this->postgres->select("admission.*, p.nama AS nama_pasien, lt.nama_lantai, ru.nama_ruangan, k.nama AS nama_jenis_pasien,bed.no_bad,dokter.nama as nama_dokter,poli.name as nama_poli, p.nik, p.tanggal_lahir, pk.nama as nama_pekerjaan, jk.nama as jenkel, p.alamat, p.pendidikan_terakhir, agama.nama as nama_agama, p.no_handphone, dokter.path_ttd, suku.nama as nama_suku, penjamin.nama as nama_hub_pasien,penjamin.alamat as alamat_hub_pasien,penjamin.no_handphone as noHp_hub_pasien, hub.nama as hubungan_keluarga_pasien, kawin.nama as status_nikah, warga.nama as nama_bangsa, p.no_bpjs as no_bpjs, mprj.name AS cara_pulang, ant.cara_pulang, msep.klsrawat,to_char(COALESCE(msep.tgl_sep, kunj.waktu_input::date),'DD-MM-YYYY') AS tgl_admit");
         $this->postgres->from('admission');
         $this->postgres->join('master_pasien p', 'p.id = admission.id_pasien', 'left');
         $this->postgres->join('antrian ant', 'CAST(ant.id_kunjungan AS INT) = admission.id_kunjungan', 'left');
-        $this->postgres->join('kunjungan kun', 'kun.id = admission.id_kunjungan', 'left');
-        $this->postgres->join('master_sep msep', 'msep.no_sep = kun.no_sep', 'left');
+        $this->postgres->join('kunjungan kunj', 'kunj.id = admission.id_kunjungan', 'left');
+        $this->postgres->join('master_sep msep', 'msep.no_sep = kunj.no_sep', 'left');
         $this->postgres->join('master_pulang_rawat_jalan mprj', 'CAST(mprj.id AS VARCHAR) = ant.cara_pulang', 'left');
         $this->postgres->join('master_pasien_penjamin penjamin', ' CAST(penjamin.id_pasien AS INT)= admission.id_pasien', 'left');
         $this->postgres->join('master_hubungan_keluarga hub', ' hub.id = penjamin.id_hubungan', 'left');

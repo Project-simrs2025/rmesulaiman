@@ -470,12 +470,14 @@
                 <td></td>
                 <td colspan="4">
                     <p>Discharge Planner</p>
-                    <p><img class="marker-image" id="example-image" src="<?= base_url('assets2/rme/img/testttd.png') ?>"
+                    <!-- <p><img class="marker-image" id="example-image" src="<?= base_url('assets2/rme/img/testttd.png') ?>"
                             style="width: 350px; height:180px;" data-input-name="image_drawer_state_image_1" />
                         <input type="hidden" id="image_drawer_state_image_1" name="image_drawer_state_image_1"
                             value="" />
                     </p>
-                    <p><input type="text" name="discharge_planner" class="form-control border-dark d-inline w-75 mx-2"></p>
+                    <p><input type="text" name="discharge_planner" class="form-control border-dark d-inline w-75 mx-2"></p> -->
+                    <img class="img-responsive center-block mt-2" style="width: 40%;" id="qr_perawat_discharge" />
+                    <select type="select" name="perawat_discharge" id="perawat_discharge" class="form-select perawat" style="width: 100%;"></select>
                 </td>
                 <td colspan="3">
                     <p>Pasien/ Keluarga</p>
@@ -492,7 +494,7 @@
 </div>
 
 
-<script>
+<!-- <script>
     const mode = "<?= $mode; ?>"
     let dataListPerawatMenyerahkan = []
     let dataListPerawatMenerima = []
@@ -579,4 +581,175 @@
     function cbCommon(data) {
         populateFormFields(data);
     }
+</script> -->
+<!-- PEMBAHARUAN 21-09-2025 -->
+<script>
+$(document).ready(function() {
+    const diagnosa_masuk = <?= json_encode($diagnosa_masuk) ?>;
+
+    // diagnosa1
+    if (diagnosa_masuk.diagnosa1) {
+        $('#diagnosa').append(
+            $('<option>', { value: diagnosa_masuk.diagnosa1, text: diagnosa_masuk.diagnosa1, selected: true })
+        ).trigger('change');
+    }
+
+});
+</script>
+<!-- PEMBAHARUAN 21-09-2025 -->
+<script>
+    const mode = "<?= $mode; ?>"
+    let dataListPerawat = []
+    let dataDokter = []
+
+    $(document).delay(1000).queue(function() {
+        callMarkerManager();
+    });
+
+    function cbCommon(data) {
+        populateFormFields(data);
+        $('#perawat_pengkaji').prop('disabled', false)
+        $('#perawat_pengkaji').select2('open')
+        $('#perawat_pengkaji').select2('close')
+        if (mode === "lihat")
+            $('#perawat_pengkaji').prop('disabled', true)
+
+        setTimeout(() => {
+            dataListPerawat?.map(v => {
+                if (v.text === $('#perawat_pengkaji').select2('data')[0].text) {
+                    QRSignatureAPI(v.id_original, 'qr_perawat_pengkaji')
+                }
+            })
+        }, 1000)
+
+
+        $('#perawat_discharge').prop('disabled', false)
+        $('#perawat_discharge').select2('open')
+        $('#perawat_discharge').select2('close')
+        if (mode === "lihat")
+            $('#perawat_discharge').prop('disabled', true)
+
+        setTimeout(() => {
+            dataDokter?.map(v => {
+                if (v.text === $('#perawat_discharge').select2('data')[0].text) {
+                    QRSignatureAPI(v.id_original, 'qr_perawat_discharge')
+                }
+            })
+        }, 1000)
+
+    }
+
+    $(document).ready(function() {
+        let page = 1;
+
+
+        const globalData = <?= $global_data; ?>;
+        const {
+            id_dokter
+        } = globalData;
+
+
+        const select2Configs = [{
+                selector: '.diagnosa',
+                url: '<?= site_url('backend/admission/getDiagnosa'); ?>'
+            },
+            {
+                selector: '.poli',
+                url: '<?= site_url('backend/admission/getPoli'); ?>'
+            },
+            {
+                selector: '.ruangan',
+                url: '<?= site_url('backend/admission/getRuangan'); ?>'
+            },
+            {
+                selector: '.perawat',
+                url: '<?= site_url('backend/admission/getKaryawan'); ?>'
+            },
+            {
+                selector: '.dokter',
+                url: '<?= site_url('backend/admission/getKaryawan/5'); ?>'
+            },
+        ];
+
+        select2Configs.forEach(({
+            selector,
+            url
+        }) => {
+            $(selector).select2({
+                ajax: {
+                    url: url,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term,
+                            limit: 100,
+                            offset: (page - 1) * 100,
+                        };
+                    },
+                    processResults: function(data) {
+                        const {
+                            items,
+                            more
+                        } = data.data;
+
+                        // Assign ke variabel tertentu jika perlu
+                        if (selector === '.perawat') {
+                            dataListPerawat = items;
+                        } else if (selector === '.dokter') {
+                            dataDokter = items;
+                        }
+
+                        const defaultOption = [{
+                            id: '',
+                            text: '--pilih--'
+                        }];
+                        const combinedItems = defaultOption.concat(items);
+
+                        return {
+                            results: combinedItems,
+                            pagination: {
+                                more: more
+                            },
+                        };
+                    },
+                    cache: true,
+                },
+                placeholder: '--pilih--',
+                allowClear: true,
+            });
+
+            // $(selector).val(null).trigger('change');
+
+            // // Infinite scroll handler
+            // $(selector).on('select2:open', function() {
+            //     $('.select2-results__options').off('scroll').on('scroll', function() {
+            //         const $this = $(this);
+            //         if ($this.scrollTop() + $this.innerHeight() >= $this[0].scrollHeight) {
+            //             page++;
+            //             $(selector).select2('data', null); // Optional
+            //         }
+            //     });
+            // });
+        });
+
+
+        $('#perawat_discharge').on('select2:select', function(e) {
+            const {
+                id_original
+            } = e.params.data;
+            QRSignatureAPI(id_original, 'qr_perawat_discharge')
+        });
+
+          $('#perawat_pengkaji').on('select2:select', function(e) {
+            const {
+                id_original
+            } = e.params.data;
+            QRSignatureAPI(id_original, 'qr_perawat_pengkaji')
+        });
+
+
+
+        //================ new =====================//
+    });
 </script>

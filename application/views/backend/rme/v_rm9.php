@@ -3,6 +3,13 @@
 	<div class="col-6 mb-4"><input type="text" class="form-control border-dark" name="jenkel"></div>
 	<div class="col-6 mb-4"><input type="text" class="form-control border-dark" name="tanggal_lahir"></div>
 	<div class="col-6 mb-4"><input type="text" class="form-control border-dark" name="no_rm"></div>
+	<div class="col-6 mb-4"></div>
+	<div class="col-6 mb-4">
+		<div class="d-flex align-items-center gap-2">
+			<div>No.SITB</div>
+			<input type="text" class="form-control border-dark" name="no_nibp">
+		</div>
+	</div>
 </div>
 
 <div class="table-responsive">
@@ -17,7 +24,7 @@
 			</tr>
 			<tr>
 				<td>Tanggal Keluar / Meninggal:</td>
-				<td><input type="date" class="form-control border-dark" name="tanggal_keluar"></td>
+				<td><input type="date" class="form-control border-dark flatpickr-no-config" name="tanggal_keluar"></td>
 				<td>Penanggung Pembayaran:</td>
 				<td><input type="text" class="form-control border-dark" name="penanggung_pembayaran"></td>
 			</tr>
@@ -66,22 +73,47 @@
 			<tr>
 				<td>Diagnosis Masuk</td>
 				<td colspan="3">
-					<select type="select" name="diagnosa_masuk" id="diagnosa_masuk" class="form-select "
-						style="width: 100%;">
-					</select>
+					<div class="mb-3">
+						<select type="select" name="diagnosa_masuk" id="diagnosa_masuk" class="form-select diagnosa" style="width: 100%;">
+						</select>
+					</div>
+
+					<?php for($i=2; $i<=4; $i++) : ?>
+						<div class="mb-3">
+							<select type="select" name="diagnosa_masuk<?= $i ?>" class="form-control w-100 diagnosa" style="width: 100%;">
+							</select>
+						</div>
+					<?php endfor;?>
 				</td>
 			</tr>
 			<tr>
 				<td>Diagnosis Keluar (Diagnosis Utama)</td>
-				<td colspan="2"><select type="select" name="diagnosa_keluar" id="diagnosa_keluar"
-						class="form-select diagnosa" style="width: 100%;">
-					</select></td>
-				<td>ICD 10 <input type="text" class="form-control border-dark" name="icd10_utama"></td>
+				<td colspan="3">
+					<div class="mb-3">
+						<select type="select" name="diagnosa_keluar" id="diagnosa_keluar"
+							class="form-select diagnosa" style="width: 100%;">
+						</select>
+					</div>
+					<?php for($i=2; $i<=4; $i++) : ?>
+						<div class="mb-3">
+							<select type="select" name="diagnosa_keluar_<?= $i ?>" class="form-control w-100 diagnosa" style="width: 100%;">
+							</select>
+						</div>
+					<?php endfor;?>
+				</td>
 			</tr>
 			<tr>
 				<td>Diagnosis Sekunder</td>
 				<td colspan="3">
-					<div class="mb-2">
+					<div class="d-flex flex-column gap-2">
+					<?php for($i=1; $i<=5; $i++) : ?>
+						<div class="">
+							<select type="select" name="diagnosis_sekunder_<?= $i ?>" class="form-control w-100 diagnosa" style="width: 100%;">
+							</select>
+						</div>
+					<?php endfor;?>
+					</div>
+					<!-- <div class="mb-2">
 						<label class="form-label">1.</label>
 						<textarea class="form-control border-dark" name="diagnosis_sekunder_1" rows="2"></textarea>
 					</div>
@@ -100,7 +132,7 @@
 					<div class="mb-2">
 						<label class="form-label">5.</label>
 						<textarea class="form-control border-dark" name="diagnosis_sekunder_5" rows="2"></textarea>
-					</div>
+					</div> -->
 				</td>
 			</tr>
 			<tr>
@@ -121,8 +153,14 @@
 			</tr>
 			<tr>
 				<td>Tindakan / Operasi</td>
-				<td colspan="2"><textarea class="form-control border-dark" name="tindakan_operasi" rows="2"></textarea></td>
-				<td>ICD 9 CM <input type="text" class="form-control border-dark" name="icd9cm"></td>
+				<td colspan="3">
+					<select type="select" name="tindakan_operasi" class="form-control w-100 tindakan" style="width: 100%;"></select>
+					<select type="select" name="tindakan_operasi_2" class="form-control w-100 tindakan" style="width: 100%;"></select>
+					<select type="select" name="tindakan_operasi_3" class="form-control w-100 tindakan" style="width: 100%;"></select>
+					<select type="select" name="tindakan_operasi_4" class="form-control w-100 tindakan" style="width: 100%;"></select>
+					<select type="select" name="tindakan_operasi_5" class="form-control w-100 tindakan" style="width: 100%;"></select>
+					<!-- <textarea class="form-control border-dark" name="tindakan_operasi" rows="2"></textarea></td> -->
+					<!-- <td>ICD 9 CM <input type="text" class="form-control border-dark" name="icd9cm"></td> -->
 			</tr>
 			<tr>
 				<td>Keadaan Umum Pasien Saat Pulang</td>
@@ -360,8 +398,40 @@
 		</div>
 	</div>
 </div>
+<!-- PEMBAHARUAN 21-09-2025 -->
+<script>
+$(document).ready(function() {
+    const diagnosa_masuk = <?= json_encode($diagnosa_masuk) ?>;
+
+    // diagnosa1
+    if (diagnosa_masuk.diagnosa1) {
+        $('#diagnosa_masuk').append(
+            $('<option>', { value: diagnosa_masuk.diagnosa1, text: diagnosa_masuk.diagnosa1, selected: true })
+        ).trigger('change');
+    }
+
+    // diagnosa2
+    if (diagnosa_masuk.diagnosa3) {
+        $('select[name="diagnosa_masuk3"]').append(
+            $('<option>', { value: diagnosa_masuk.diagnosa2, text: diagnosa_masuk.diagnosa2, selected: true })
+        ).trigger('change');
+    }
+
+    // diagnosa3
+    if (diagnosa_masuk.diagnosa2) {
+        $('select[name="diagnosa_masuk2"]').append(
+            $('<option>', { value: diagnosa_masuk.diagnosa3, text: diagnosa_masuk.diagnosa3, selected: true })
+        ).trigger('change');
+    }
+});
+</script>
+<!-- PEMBAHARUAN 21-09-2025 -->
 
 <script>
+	flatpickr('.flatpickr-no-config', {
+	    enableTime: false,
+	    dateFormat: "d-m-Y", 
+	});
 	let dataDokter = []
 	const mode = "<?= $mode; ?>"
 
@@ -380,87 +450,95 @@
 
 		QRSignatureAPI(id_dokter, 'qr_dokter_dpjp')
 
-		$('#diagnosa_masuk').select2({
-			ajax: {
-				url: '<?= site_url('backend/admission/getDiagnosa'); ?>', // PHP script to fetch data
-				dataType: 'json',
-				delay: 250, // Delay in ms while typing
-				data: function(params) {
-					console.log("params", params)
-					return {
-						q: params.term, // Search query
-						limit: 100, // Number of items per page
-						offset: (page - 1) * 100, // Calculate offset
-					};
-				},
-				processResults: function(data) {
-					const {
-						items,
-						more
-					} = data.data
-					console.log(items, more)
-					return {
-						results: items, // Data from PHP
-						pagination: {
-							more: more, // Check if more data is available
-						},
-					};
-				},
-				cache: true,
-			},
-			placeholder: 'Search for items...',
-			// minimumInputLength: 0,
-		});
-		$('#diagnosa_masuk').on('select2:open', function() {
-			$('.select2-results__options').on('scroll', function() {
-				const $this = $(this);
-				if ($this.scrollTop() + $this.innerHeight() >= $this[0].scrollHeight) {
-					page++; // Increment page
-					$('#diagnosa_masuk').select2('data', null); // Trigger new data fetch
-				}
-			});
-		});
+		const select2Configs = [{
+                selector: '.diagnosa',
+                url: '<?= site_url('backend/admission/getDiagnosa'); ?>'
+            },
+            {
+                selector: '.poli',
+                url: '<?= site_url('backend/admission/getPoli'); ?>'
+            },
+			{
+                selector: '.tindakan',
+                url: '<?= site_url('backend/admission/getDiagnosa9'); ?>'
+            },
+            {
+                selector: '.ruangan',
+                url: '<?= site_url('backend/admission/getRuangan'); ?>'
+            },
+            {
+                selector: '.perawat',
+                url: '<?= site_url('backend/admission/getKaryawan'); ?>'
+            },
+            {
+                selector: '.dokter',
+                url: '<?= site_url('backend/admission/getKaryawan/5'); ?>'
+            },
+        ];
 
-		$('#diagnosa_keluar').select2({
-			ajax: {
-				url: '<?= site_url('backend/admission/getDiagnosa'); ?>', // PHP script to fetch data
-				dataType: 'json',
-				delay: 250, // Delay in ms while typing
-				data: function(params) {
-					console.log("params", params)
-					return {
-						q: params.term, // Search query
-						limit: 100, // Number of items per page
-						offset: (page - 1) * 100, // Calculate offset
-					};
-				},
-				processResults: function(data) {
-					const {
-						items,
-						more
-					} = data.data
-					console.log(items, more)
-					return {
-						results: items, // Data from PHP
-						pagination: {
-							more: more, // Check if more data is available
-						},
-					};
-				},
-				cache: true,
-			},
-			placeholder: 'Search for items...',
-			// minimumInputLength: 0,
-		});
-		$('#diagnosa_keluar').on('select2:open', function() {
-			$('.select2-results__options').on('scroll', function() {
-				const $this = $(this);
-				if ($this.scrollTop() + $this.innerHeight() >= $this[0].scrollHeight) {
-					page++; // Increment page
-					$('#diagnosa_keluar').select2('data', null); // Trigger new data fetch
-				}
-			});
-		});
+        select2Configs.forEach(({
+            selector,
+            url
+        }) => {
+			
+            $(selector).select2({
+                ajax: {
+                    url: url,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+						return {
+							q: params.term || '',
+							limit: 10,
+							offset: ((params.page || 1) - 1) * 10,
+						};
+					},
+                    processResults: function(data) {
+                        const {
+                            items,
+                            more
+                        } = data.data;
+
+                        // Assign ke variabel tertentu jika perlu
+                        if (selector === '.perawat') {
+                            dataListPerawat = items;
+                        } else if (selector === '.dokter') {
+                            dataDokter = items;
+                        }
+
+                        const defaultOption = [{
+                            id: '',
+                            text: '--pilih--'
+                        }];
+                        const combinedItems = defaultOption.concat(items);
+
+                        return {
+                            results: combinedItems,
+                            pagination: {
+                                more: more
+                            },
+                        };
+                    },
+                    cache: true,
+                },
+                placeholder: '--pilih--',
+                allowClear: true,
+				minimumInputLength: 2, 
+            });
+
+            //$(selector).val(null).trigger('change');
+
+            // // Infinite scroll handler
+            // $(selector).on('select2:open', function() {
+            //     $('.select2-results__options').off('scroll').on('scroll', function() {
+            //         const $this = $(this);
+            //         if ($this.scrollTop() + $this.innerHeight() >= $this[0].scrollHeight) {
+            //             page++;
+            //             $(selector).select2('data', null); // Optional
+            //         }
+            //     });
+            // });
+        });
 
 		for (let i = 1; i <= 4; i++) {
 			$(`#dokter_umum_${i}`).on('select2:select', function(e) {

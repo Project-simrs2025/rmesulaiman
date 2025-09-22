@@ -31,4 +31,20 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 /tests/tests/
 /tests/results/
 
+assets2/rme/img/*
+!assets2/rme/img/*.svg
+!assets2/rme/img/*.jpg
+!assets2/rme/img/*.jpeg
+!assets2/rme/img/*.gif
+
+
+# Abaikan semua PNG di assets dan assets2
+/assets/**/*.png
+/assets2/**/*.png
+
+# Tapi tetap simpan logo/icon PNG penting
+!assets/images/logo*.png
+!assets2/images/logo*.png
+
+
 index2.html

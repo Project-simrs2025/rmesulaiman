@@ -57,8 +57,8 @@
 	<div class="col-6 form-group">
 		<label>Tanggal Lahir / Umur</label>
 		<div class="d-flex flex-row gap-3">
-			<input type="text" name="nama_pasien" class="form-control border-dark">
-			<input type="text" name="umur" class="form-control border-dark">
+			<input type="text" name="tanggal_lahir" class="form-control border-dark">
+			<input type="text" name="umur" value="<?php echo $umur; ?>" class="form-control border-dark">
 		</div>
 	</div>
 	<div class="col-6 form-group">
@@ -5262,27 +5262,27 @@
 							<div class="col-1">-</div>
 							<div class="col-11">
 								<div class="form-check form-check-inline">
-									<input class="custom-checkbox-success" type="radio" name="kebutuhanEdukasi" id="prosesPenyakit" value="prosesPenyakit">
+									<input class="custom-checkbox-success" type="checkbox"  id="prosesPenyakit" name="prosesPenyakit">
 									<label class="form-check-label" for="prosesPenyakit">Proses penyakit</label>
 								</div>
 								<div class="form-check form-check-inline">
-									<input class="custom-checkbox-success" type="radio" name="kebutuhanEdukasi" id="pengobatanTindakan" value="pengobatanTindakan">
+									<input class="custom-checkbox-success" type="checkbox"  id="pengobatanTindakan" name="pengobatanTindakan">
 									<label class="form-check-label" for="pengobatanTindakan">Pengobatan / tindakan</label>
 								</div>
 								<div class="form-check form-check-inline">
-									<input class="custom-checkbox-success" type="radio" name="kebutuhanEdukasi" id="terapiObat" value="terapiObat">
+									<input class="custom-checkbox-success" type="checkbox"  id="terapiObat" name="terapiObat">
 									<label class="form-check-label" for="terapiObat">Terapi / Obat</label>
 								</div>
 								<div class="form-check form-check-inline">
-									<input class="custom-checkbox-success" type="radio" name="kebutuhanEdukasi" id="nutrisi" value="nutrisi">
+									<input class="custom-checkbox-success" type="checkbox"  id="nutrisi" name="nutrisi">
 									<label class="form-check-label" for="nutrisi">Nutrisi</label>
 								</div>
 								<div class="form-check form-check-inline">
-									<input class="custom-checkbox-success" type="radio" name="kebutuhanEdukasi" id="supportPsikolog" value="supportPsikolog">
+									<input class="custom-checkbox-success" type="checkbox"  id="supportPsikolog" name="supportPsikolog">
 									<label class="form-check-label" for="supportPsikolog">Support / Psikolog</label>
 								</div>
 								<div class="form-check">
-									<input class="custom-checkbox-success" type="radio" name="kebutuhanEdukasi" id="lainLainEdukasi" value="lainLainEdukasi">
+									<input class="custom-checkbox-success" type="checkbox"  id="lainLainEdukasi" name="lainLainEdukasi">
 									<label class="form-check-label" for="lainLainEdukasi">Lain-lain, jelaskan:</label>
 								</div>
 								<input
@@ -5767,6 +5767,13 @@
 					<select type="select" name="diagnosa_tambahan" id="diagnosa_tambahan" class="form-select"
 						style="width: 100%;">
 					</select>
+					<?php for($i=2; $i<=4; $i++) : ?>
+						<div class="">
+							<select type="select" name="diagnosa_tambahan_<?= $i ?>" class="form-control w-100 diagnosa" style="width: 100%;">
+							</select>
+						</div>
+					<?php endfor;?>
+					
 				</td>
 				<td>
 					<u>DIAGNOSA BANDING</u>
